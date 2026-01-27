@@ -6,6 +6,7 @@ import { Calendar, Heart, Pencil, MessageSquare } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EventImage } from "./event-image"
+import { BlastDialog } from "@/components/blasts"
 import type { EventWithSaveCount } from "@/actions/events"
 
 interface MyEventsListProps {
@@ -56,12 +57,16 @@ export function MyEventsList({ events }: MyEventsListProps) {
                   Edit
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/events/${event.id}`}>
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                  Send Update
-                </Link>
-              </Button>
+              <BlastDialog
+                eventId={event.id}
+                eventTitle={event.title}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <MessageSquare className="h-4 w-4 mr-1" />
+                    Send Update
+                  </Button>
+                }
+              />
             </div>
           </CardContent>
         </Card>

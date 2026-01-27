@@ -2,21 +2,24 @@
 
 import Link from "next/link"
 import { format } from "date-fns"
-import { MapPin, Calendar, Clock, ExternalLink, Pencil, Trash2 } from "lucide-react"
+import { MapPin, Calendar, Clock, ExternalLink, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EventImage } from "./event-image"
 import { VerifiedBadge } from "./verified-badge"
+import { FavoriteButton } from "./favorite-button"
+import { DeleteEventButton } from "./delete-event-button"
 import type { EventWithCreator } from "@/types"
 
 interface EventDetailProps {
   event: EventWithCreator
   isOwner?: boolean
   currentUserId?: string | null
-  onDelete?: () => void
+  initialFavorited?: boolean
+  showFavoriteButton?: boolean
 }
 
-export function EventDetail({ event, isOwner, currentUserId, onDelete }: EventDetailProps) {
+export function EventDetail({ event, isOwner, currentUserId, initialFavorited, showFavoriteButton }: EventDetailProps) {
   const isCreator = isOwner ?? (currentUserId ? event.creator_id === currentUserId : false)
   const startDate = new Date(event.start_time)
   const endDate = event.end_time ? new Date(event.end_time) : null
@@ -41,7 +44,16 @@ export function EventDetail({ event, isOwner, currentUserId, onDelete }: EventDe
       />
 
       <div className="mt-6">
-        <h1 className="text-3xl font-bold text-zinc-100">{event.title}</h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-3xl font-bold text-zinc-100">{event.title}</h1>
+          {showFavoriteButton && (
+            <FavoriteButton
+              eventId={event.id}
+              initialFavorited={initialFavorited ?? false}
+              size="default"
+            />
+          )}
+        </div>
 
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-3 text-zinc-300">
@@ -109,14 +121,7 @@ export function EventDetail({ event, isOwner, currentUserId, onDelete }: EventDe
                 Edit Event
               </Link>
             </Button>
-            <Button
-              variant="destructive"
-              className="gap-2"
-              onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete Event
-            </Button>
+            <DeleteEventButton eventId={event.id} />
           </div>
         )}
       </div>
