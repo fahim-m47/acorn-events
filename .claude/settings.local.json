@@ -1,0 +1,9 @@
+{
+  "enabledMcpjsonServers": [
+    "next-devtools",
+    "supabase",
+    "tailwindcss-server",
+    "shadcn-ui",
+    "vercel"
+  ]
+}
