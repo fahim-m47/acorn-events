@@ -15,7 +15,7 @@ export function TimelineDateHeader({ date }: TimelineDateHeaderProps) {
           {format(date, 'EEEE')}
         </div>
       </div>
-      <div className="timeline-dot mt-2" />
+      <div className="timeline-dot-large mt-2" />
     </div>
   )
 }

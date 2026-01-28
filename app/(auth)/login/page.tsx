@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
@@ -39,7 +40,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm space-y-8 text-center">
         {/* Logo/Title */}
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <Image
+            src="/images/acorn_white.png"
+            alt="Haver Events"
+            width={64}
+            height={64}
+            className="mx-auto"
+          />
           <h1 className="text-4xl font-bold text-white">
             Haver<span className="text-red-600">Events</span>
           </h1>

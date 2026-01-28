@@ -35,8 +35,8 @@ export function Header() {
           <Image
             src="/images/acorn_white.png"
             alt="Haver Events"
-            width={36}
-            height={36}
+            width={72}
+            height={72}
             className="object-contain"
           />
         </Link>

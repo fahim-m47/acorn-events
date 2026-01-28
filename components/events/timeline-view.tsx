@@ -26,9 +26,6 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
 
   return (
     <div className="relative">
-      {/* Vertical timeline line */}
-      <div className="timeline-line absolute left-[4.5rem] top-0 bottom-0" />
-
       {/* Date groups */}
       <div className="relative">
         {sortedDateKeys.map((dateKey) => {
@@ -39,15 +36,35 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
             <div key={dateKey}>
               <TimelineDateHeader date={date} />
 
-              {/* Events for this date */}
-              <div className="ml-24 space-y-4 pb-6">
-                {dateEvents.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    initialFavorited={favoritedEventIds.includes(event.id)}
-                  />
-                ))}
+              {/* Events for this date with dot trail */}
+              <div className="flex">
+                {/* Dot trail column */}
+                <div className="w-16 shrink-0" />
+                <div className="flex flex-col items-center mr-4 py-2">
+                  {dateEvents.map((_, index) => (
+                    <div key={index} className="flex flex-col items-center">
+                      <div className="timeline-dot-small" />
+                      {index < dateEvents.length - 1 && (
+                        <div className="h-28 flex flex-col items-center justify-around py-2">
+                          <div className="timeline-dot-small opacity-60" />
+                          <div className="timeline-dot-small opacity-40" />
+                          <div className="timeline-dot-small opacity-60" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Events column */}
+                <div className="flex-1 space-y-4 pb-6">
+                  {dateEvents.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      initialFavorited={favoritedEventIds.includes(event.id)}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )
