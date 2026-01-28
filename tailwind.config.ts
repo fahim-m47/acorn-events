@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        'haver-dark-red': '#3D0E10',
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

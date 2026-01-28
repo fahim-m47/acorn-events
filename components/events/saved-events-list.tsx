@@ -31,7 +31,7 @@ export function SavedEventsList({ upcoming, past }: SavedEventsListProps) {
           <h2 className="text-lg font-semibold text-zinc-200 mb-4">UPCOMING</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} initialFavorited={true} />
             ))}
           </div>
         </section>
@@ -42,7 +42,7 @@ export function SavedEventsList({ upcoming, past }: SavedEventsListProps) {
           <h2 className="text-lg font-semibold text-zinc-200 mb-4">PAST</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-60">
             {past.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} initialFavorited={true} />
             ))}
           </div>
         </section>

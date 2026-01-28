@@ -99,3 +99,20 @@ export async function isFavorited(eventId: string): Promise<boolean> {
 
   return !!data
 }
+
+// Get IDs of events the current user has favorited
+export async function getFavoritedEventIds(): Promise<string[]> {
+  const supabase = await createServerSupabaseClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data } = await supabase
+    .from('favorites')
+    .select('event_id')
+    .eq('user_id', user.id)
+
+  return (data || []).map((f) => f.event_id)
+}

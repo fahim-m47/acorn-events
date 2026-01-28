@@ -35,3 +35,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Header gradient */
+.header-gradient {
+  background: linear-gradient(180deg, #3D0E10 0%, rgba(0, 0, 0, 0.8) 50%, transparent 100%);
+}
+
+/* Timeline utilities */
+.timeline-dot {
+  @apply w-2 h-2 rounded-full bg-zinc-500;
+}
+
+.timeline-line {
+  @apply w-px bg-zinc-700;
+}

@@ -1,14 +1,15 @@
 "use client"
 
 import { Calendar } from "lucide-react"
-import { EventCard } from "./event-card"
+import { TimelineView } from "./timeline-view"
 import type { EventWithCreator } from "@/types"
 
 interface EventFeedProps {
   events: EventWithCreator[]
+  favoritedEventIds?: string[]
 }
 
-export function EventFeed({ events }: EventFeedProps) {
+export function EventFeed({ events, favoritedEventIds }: EventFeedProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -24,10 +25,6 @@ export function EventFeed({ events }: EventFeedProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {events.map((event) => (
-        <EventCard key={event.id} event={event} />
-      ))}
-    </div>
+    <TimelineView events={events} favoritedEventIds={favoritedEventIds} />
   )
 }

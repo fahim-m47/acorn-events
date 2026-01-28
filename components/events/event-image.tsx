@@ -8,13 +8,15 @@ interface EventImageProps {
   alt: string
   className?: string
   priority?: boolean
+  variant?: 'video' | 'square'
 }
 
-export function EventImage({ imageUrl, alt, className, priority = false }: EventImageProps) {
+export function EventImage({ imageUrl, alt, className, priority = false, variant = 'video' }: EventImageProps) {
   return (
     <div
       className={cn(
-        "relative aspect-video w-full overflow-hidden rounded-lg",
+        "relative w-full overflow-hidden rounded-lg",
+        variant === 'video' ? 'aspect-video' : 'aspect-square',
         className
       )}
     >

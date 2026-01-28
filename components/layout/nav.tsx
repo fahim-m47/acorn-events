@@ -39,10 +39,14 @@ export function Nav({ mobile = false, onLinkClick }: NavProps) {
           href={link.href}
           onClick={onLinkClick}
           className={cn(
-            'text-sm font-medium transition-colors hover:text-foreground',
-            pathname === link.href
-              ? 'text-foreground'
-              : 'text-muted-foreground'
+            'text-sm font-medium transition-colors',
+            mobile
+              ? pathname === link.href
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+              : pathname === link.href
+                ? 'text-white'
+                : 'text-white/70 hover:text-white'
           )}
         >
           {link.label}
