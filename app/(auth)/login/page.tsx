@@ -39,7 +39,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm space-y-8 text-center">
-        {/* Logo/Title */}
+        {/* Logo */}
         <div className="space-y-4">
           <Image
             src="/images/acorn_white.png"
@@ -48,9 +48,6 @@ export default function LoginPage() {
             height={64}
             className="mx-auto"
           />
-          <h1 className="text-4xl font-bold text-white">
-            Haver<span className="text-red-600">Events</span>
-          </h1>
           <p className="text-gray-400">
             Discover what&apos;s happening at Haverford
           </p>

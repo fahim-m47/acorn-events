@@ -2,7 +2,6 @@
 
 import { format } from 'date-fns'
 import { EventCard } from './event-card'
-import { TimelineDateHeader } from './timeline-date-header'
 import type { EventWithCreator } from '@/types'
 
 interface TimelineViewProps {
@@ -33,38 +32,32 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
           const date = new Date(dateKey)
 
           return (
-            <div key={dateKey}>
-              <TimelineDateHeader date={date} />
-
-              {/* Events for this date with dot trail */}
-              <div className="flex">
-                {/* Dot trail column */}
-                <div className="w-16 shrink-0" />
-                <div className="flex flex-col items-center mr-4 py-2">
-                  {dateEvents.map((_, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="timeline-dot-small" />
-                      {index < dateEvents.length - 1 && (
-                        <div className="h-28 flex flex-col items-center justify-around py-2">
-                          <div className="timeline-dot-small opacity-60" />
-                          <div className="timeline-dot-small opacity-40" />
-                          <div className="timeline-dot-small opacity-60" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <div key={dateKey} className="flex gap-4 pb-6">
+              {/* Date column */}
+              <div className="w-16 text-right shrink-0 pt-1">
+                <div className="text-base font-semibold text-zinc-200">
+                  {format(date, 'MMM d')}
                 </div>
-
-                {/* Events column */}
-                <div className="flex-1 space-y-4 pb-6">
-                  {dateEvents.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      initialFavorited={favoritedEventIds.includes(event.id)}
-                    />
-                  ))}
+                <div className="text-sm text-zinc-500">
+                  {format(date, 'EEEE')}
                 </div>
+              </div>
+
+              {/* Dot + Line column - uses relative container with absolute line */}
+              <div className="relative flex flex-col items-center">
+                <div className="timeline-dot mt-1.5" />
+                <div className="timeline-line absolute top-4 bottom-0 left-1/2 -translate-x-1/2" />
+              </div>
+
+              {/* All events in one column - ensures consistent alignment */}
+              <div className="flex-1 space-y-4">
+                {dateEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    initialFavorited={favoritedEventIds.includes(event.id)}
+                  />
+                ))}
               </div>
             </div>
           )

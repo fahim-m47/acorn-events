@@ -36,29 +36,23 @@
   }
 }
 
-/* Header gradient */
+/* Header gradient - subtle feathered fade */
 .header-gradient {
   background: linear-gradient(
     180deg,
-    #3D0E10 0%,
-    #3D0E10 20%,
-    rgba(61, 14, 16, 0.9) 40%,
-    rgba(61, 14, 16, 0.7) 60%,
-    rgba(61, 14, 16, 0.4) 80%,
-    rgba(0, 0, 0, 0.2) 90%,
+    rgba(61, 14, 16, 0.6) 0%,
+    rgba(61, 14, 16, 0.35) 30%,
+    rgba(61, 14, 16, 0.15) 60%,
+    rgba(0, 0, 0, 0.05) 85%,
     transparent 100%
   );
 }
 
 /* Timeline utilities */
-.timeline-dot-large {
-  @apply w-2.5 h-2.5 rounded-full bg-zinc-400;
+.timeline-dot {
+  @apply w-2 h-2 rounded-full bg-zinc-500;
 }
 
-.timeline-dot-small {
-  @apply w-1.5 h-1.5 rounded-full bg-zinc-600;
-}
-
-.timeline-dots-trail {
-  @apply flex flex-col items-center gap-2;
+.timeline-line {
+  @apply w-px bg-zinc-700;
 }
