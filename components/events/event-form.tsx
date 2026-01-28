@@ -64,6 +64,20 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
       formData.set("capacity", "")
     }
 
+    // Convert datetime-local to ISO string on CLIENT side (correct timezone)
+    // The browser correctly interprets datetime-local as local time
+    const startTimeLocal = formData.get("start_time") as string
+    if (startTimeLocal) {
+      const startDate = new Date(startTimeLocal)  // Parsed as LOCAL time in browser
+      formData.set("start_time", startDate.toISOString())  // Convert to UTC
+    }
+
+    const endTimeLocal = formData.get("end_time") as string
+    if (endTimeLocal) {
+      const endDate = new Date(endTimeLocal)  // Parsed as LOCAL time in browser
+      formData.set("end_time", endDate.toISOString())  // Convert to UTC
+    }
+
     // Client-side validation
     const title = formData.get("title") as string
     const location = formData.get("location") as string

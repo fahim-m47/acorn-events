@@ -6,38 +6,22 @@ import {
   MAX_BLAST_LENGTH,
 } from './constants'
 
-// Helper to parse datetime-local string as local time consistently across browsers
-const parseDatetimeLocal = (val: string): Date | null => {
-  // datetime-local format: "2026-01-28T20:00" (no timezone)
-  // We need to treat it as local time, not UTC
-  if (!val.includes('T')) {
-    return null
-  }
-
-  // Parse manually to ensure local time interpretation across all browsers
-  const [datePart, timePart] = val.split('T')
-  const [year, month, day] = datePart.split('-').map(Number)
-  const [hours, minutes] = timePart.split(':').map(Number)
-
-  if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
-    return null
-  }
-
-  // new Date(year, month-1, day, hours, minutes) always uses local time
-  return new Date(year, month - 1, day, hours, minutes)
-}
-
-// Helper to transform datetime-local input to ISO string
+// Helper to validate datetime strings (accepts ISO strings or datetime-local format)
+// Client now sends ISO strings with timezone, so we just validate and pass through
 const datetimeTransform = z.string().min(1, 'Date/time is required').transform((val, ctx) => {
-  const date = parseDatetimeLocal(val)
-  if (!date) {
+  const date = new Date(val)
+  if (isNaN(date.getTime())) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Invalid date/time',
     })
     return z.NEVER
   }
-  return date.toISOString()
+  // If it's already an ISO string (has Z or +/-), return as-is
+  // Otherwise convert to ISO (for backward compatibility)
+  return val.includes('Z') || val.includes('+') || /T\d{2}:\d{2}:\d{2}/.test(val)
+    ? val
+    : date.toISOString()
 })
 
 const optionalDatetimeTransform = z
@@ -46,15 +30,19 @@ const optionalDatetimeTransform = z
   .nullable()
   .transform((val, ctx) => {
     if (!val) return null
-    const date = parseDatetimeLocal(val)
-    if (!date) {
+    const date = new Date(val)
+    if (isNaN(date.getTime())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Invalid date/time',
       })
       return z.NEVER
     }
-    return date.toISOString()
+    // If it's already an ISO string (has Z or +/-), return as-is
+    // Otherwise convert to ISO (for backward compatibility)
+    return val.includes('Z') || val.includes('+') || /T\d{2}:\d{2}:\d{2}/.test(val)
+      ? val
+      : date.toISOString()
   })
 
 export const createEventSchema = z.object({

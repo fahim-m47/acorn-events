@@ -45,13 +45,44 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
   return { firstName, lastName }
 }
 
+// Format location for display: two lines if needed, truncate if too long
+const formatLocation = (location: string | null | undefined): { line1: string; line2?: string } => {
+  if (!location) return { line1: "Unknown location" }
+
+  const parts = location.trim().split(/\s+/)
+  if (parts.length === 1) {
+    // Single word - truncate if too long
+    if (location.length > 12) {
+      return { line1: location.slice(0, 10) + "..." }
+    }
+    return { line1: location }
+  }
+
+  // Multiple words - split into two lines
+  const midpoint = Math.ceil(parts.length / 2)
+  const line1 = parts.slice(0, midpoint).join(" ")
+  const line2 = parts.slice(midpoint).join(" ")
+
+  // If line1 is too long, truncate
+  if (line1.length > 12) {
+    return { line1: line1.slice(0, 10) + "..." }
+  }
+
+  // If line2 is too long, truncate
+  if (line2.length > 10) {
+    return { line1, line2: line2.slice(0, 8) + "..." }
+  }
+
+  return { line1, line2 }
+}
+
 export function EventCard({ event, initialFavorited = false }: EventCardProps) {
   return (
     <Link href={`/events/${event.id}`} className="block group">
-      <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700">
-        <div className="flex p-4 gap-4">
+      <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700 max-w-full">
+        <div className="flex p-4 gap-4 overflow-hidden">
           {/* Left side - Event info */}
-          <div className="flex-1 min-w-0 flex flex-col">
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
             <span className="text-sm text-zinc-400">
               {format(new Date(event.start_time), "h:mm a")} EST
             </span>
@@ -74,9 +105,14 @@ export function EventCard({ event, initialFavorited = false }: EventCardProps) {
             </div>
 
             {event.location && (
-              <div className="mt-1 flex items-center gap-1 text-sm text-zinc-400">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <span className="truncate">{event.location}</span>
+              <div className="mt-1 flex items-start gap-1 text-sm text-zinc-400">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span className="flex flex-col leading-tight">
+                  <span>{formatLocation(event.location).line1}</span>
+                  {formatLocation(event.location).line2 && (
+                    <span>{formatLocation(event.location).line2}</span>
+                  )}
+                </span>
               </div>
             )}
           </div>
