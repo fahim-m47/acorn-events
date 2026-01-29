@@ -18,7 +18,11 @@ export function useAuth() {
   }, [])
 
   useEffect(() => {
-    if (!supabase) return
+    // If supabase client couldn't be created, stop loading
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
 
     // Get initial session
     const getInitialSession = async () => {
