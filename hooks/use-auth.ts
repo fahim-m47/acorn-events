@@ -137,7 +137,30 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     if (!supabase) return
-    await supabase.auth.signOut()
+
+    // Clear local state immediately (optimistic update)
+    setUser(null)
+    setIsAdmin(false)
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.warn('[AUTH] Sign out timed out after 3s - proceeding anyway')
+        resolve()
+      }, 3000)
+    })
+
+    // Race between signOut and timeout
+    try {
+      await Promise.race([
+        supabase.auth.signOut(),
+        timeoutPromise
+      ])
+    } catch (error) {
+      console.error('[AUTH] Sign out error:', error)
+    }
+
+    // Always refresh regardless of outcome
     router.refresh()
   }, [supabase, router])
 
