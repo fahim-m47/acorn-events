@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Bell, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/contexts/auth-context'
 import { CurrentTime } from './current-time'
 import { UserMenu } from '@/components/auth/user-menu'
 
