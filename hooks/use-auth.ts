@@ -18,6 +18,10 @@ export function useAuth() {
   }, [])
 
   useEffect(() => {
+    // Track if component is still mounted
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+
     // If supabase client couldn't be created, stop loading
     if (!supabase) {
       setLoading(false)
@@ -27,7 +31,18 @@ export function useAuth() {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        // Set a 5-second safety timeout
+        timeoutId = setTimeout(() => {
+          if (isMounted) {
+            console.error('[AUTH] Session fetch timed out after 5s - forcing loading to false')
+            setLoading(false)
+          }
+        }, 5000)
+
         const { data: { session } } = await supabase.auth.getSession()
+
+        if (!isMounted) return // Component unmounted, don't update state
+
         setUser(session?.user ?? null)
 
         // Check admin status if user is logged in
@@ -38,19 +53,31 @@ export function useAuth() {
               .select('is_admin')
               .eq('id', session.user.id)
               .single()
-            setIsAdmin(data?.is_admin ?? false)
-          } catch {
-            setIsAdmin(false)
+
+            if (isMounted) {
+              setIsAdmin(data?.is_admin ?? false)
+            }
+          } catch (err) {
+            console.error('[AUTH] Failed to fetch admin status:', err)
+            if (isMounted) {
+              setIsAdmin(false)
+            }
           }
         } else {
           setIsAdmin(false)
         }
       } catch (error) {
         console.error('Auth error:', error)
-        setUser(null)
-        setIsAdmin(false)
+        if (isMounted) {
+          setUser(null)
+          setIsAdmin(false)
+        }
       } finally {
-        setLoading(false)
+        // Clear timeout since we completed
+        if (timeoutId) clearTimeout(timeoutId)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
@@ -60,6 +87,8 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         try {
+          if (!isMounted) return
+
           setUser(session?.user ?? null)
 
           // Check admin status if user is logged in
@@ -70,24 +99,34 @@ export function useAuth() {
                 .select('is_admin')
                 .eq('id', session.user.id)
                 .single()
-              setIsAdmin(data?.is_admin ?? false)
+              if (isMounted) {
+                setIsAdmin(data?.is_admin ?? false)
+              }
             } catch {
-              setIsAdmin(false)
+              if (isMounted) {
+                setIsAdmin(false)
+              }
             }
           } else {
             setIsAdmin(false)
           }
         } catch (error) {
           console.error('Auth state change error:', error)
-          setUser(null)
-          setIsAdmin(false)
+          if (isMounted) {
+            setUser(null)
+            setIsAdmin(false)
+          }
         } finally {
-          setLoading(false)
+          if (isMounted) {
+            setLoading(false)
+          }
         }
       }
     )
 
     return () => {
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [supabase])
