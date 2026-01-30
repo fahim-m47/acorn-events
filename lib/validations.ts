@@ -1,30 +1,28 @@
 import { z } from 'zod'
+import { fromZonedTime } from 'date-fns-tz'
 import {
   MAX_TITLE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_LOCATION_LENGTH,
   MAX_BLAST_LENGTH,
+  TIMEZONE,
 } from './constants'
 
 // Helper to parse datetime-local string as local time consistently across browsers
 const parseDatetimeLocal = (val: string): Date | null => {
   // datetime-local format: "2026-01-28T20:00" (no timezone)
-  // We need to treat it as local time, not UTC
+  // We treat this as the time in New York (EST/EDT)
   if (!val.includes('T')) {
     return null
   }
 
-  // Parse manually to ensure local time interpretation across all browsers
-  const [datePart, timePart] = val.split('T')
-  const [year, month, day] = datePart.split('-').map(Number)
-  const [hours, minutes] = timePart.split(':').map(Number)
-
-  if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
+  try {
+    const date = fromZonedTime(val, TIMEZONE)
+    if (isNaN(date.getTime())) return null
+    return date
+  } catch {
     return null
   }
-
-  // new Date(year, month-1, day, hours, minutes) always uses local time
-  return new Date(year, month - 1, day, hours, minutes)
 }
 
 // Helper to transform datetime-local input to ISO string

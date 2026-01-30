@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
+import { TIMEZONE } from "@/lib/constants"
 import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { EventImage } from "./event-image"
@@ -53,7 +54,7 @@ export function EventCard({ event, initialFavorited = false }: EventCardProps) {
           {/* Left side - Event info */}
           <div className="flex-1 min-w-0 flex flex-col">
             <span className="text-sm text-zinc-400">
-              {format(new Date(event.start_time), "h:mm a")} EST
+              {formatInTimeZone(new Date(event.start_time), TIMEZONE, "h:mm a")} EST
             </span>
 
             <h3 className="mt-1 font-semibold text-zinc-100 line-clamp-2 group-hover:text-red-400 transition-colors">

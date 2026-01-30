@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
+import { TIMEZONE } from '@/lib/constants'
 
 export function CurrentTime() {
   const [time, setTime] = useState<string>('')
 
   useEffect(() => {
     const updateTime = () => {
-      setTime(format(new Date(), "h:mm a 'EST'"))
+      setTime(formatInTimeZone(new Date(), TIMEZONE, "h:mm a 'EST'"))
     }
     updateTime()
     const interval = setInterval(updateTime, 1000)

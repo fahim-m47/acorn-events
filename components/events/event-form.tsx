@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
+import { TIMEZONE } from "@/lib/constants"
 import Image from "next/image"
 import { Loader2, Upload, X, Clock, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -29,9 +30,9 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
 
   const formatDateTimeLocal = (dateStr: string | null | undefined) => {
     if (!dateStr) return ""
-    const date = new Date(dateStr)
-    // Use date-fns for consistent cross-browser timezone handling
-    return format(date, "yyyy-MM-dd'T'HH:mm")
+    // dateStr is UTC ISO string. We want to display it as New York time.
+    // formatInTimeZone takes the UTC date and formats it in the target timezone
+    return formatInTimeZone(dateStr, TIMEZONE, "yyyy-MM-dd'T'HH:mm")
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

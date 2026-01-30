@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
+import { TIMEZONE } from "@/lib/constants"
 import { MapPin, Calendar, Clock, ExternalLink, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -58,14 +59,14 @@ export function EventDetail({ event, isOwner, currentUserId, initialFavorited, s
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-3 text-zinc-300">
             <Calendar className="h-5 w-5 text-zinc-500" />
-            <span>{format(startDate, "EEEE, MMMM d, yyyy")}</span>
+            <span>{formatInTimeZone(startDate, TIMEZONE, "EEEE, MMMM d, yyyy")}</span>
           </div>
 
           <div className="flex items-center gap-3 text-zinc-300">
             <Clock className="h-5 w-5 text-zinc-500" />
             <span>
-              {format(startDate, "h:mm a")}
-              {endDate && ` - ${format(endDate, "h:mm a")}`}
+              {formatInTimeZone(startDate, TIMEZONE, "h:mm a")}
+              {endDate && ` - ${formatInTimeZone(endDate, TIMEZONE, "h:mm a")}`}
             </span>
           </div>
 

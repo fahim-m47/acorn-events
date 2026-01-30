@@ -1,6 +1,8 @@
 "use client"
 
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
+import { TIMEZONE } from "@/lib/constants"
 import { EventCard } from './event-card'
 import type { EventWithCreator } from '@/types'
 
@@ -12,7 +14,8 @@ interface TimelineViewProps {
 export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewProps) {
   // Group events by date
   const groupedEvents = events.reduce<Record<string, EventWithCreator[]>>((groups, event) => {
-    const dateKey = format(new Date(event.start_time), 'yyyy-MM-dd')
+    // Use EST date for grouping so events appear in the correct bucket
+    const dateKey = formatInTimeZone(new Date(event.start_time), TIMEZONE, 'yyyy-MM-dd')
     if (!groups[dateKey]) {
       groups[dateKey] = []
     }
@@ -29,7 +32,8 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
       <div className="relative">
         {sortedDateKeys.map((dateKey) => {
           const dateEvents = groupedEvents[dateKey]
-          const date = new Date(dateKey)
+          // Parse as local date to ensure it displays exactly as listed (prevent timezone shifts)
+          const date = parse(dateKey, 'yyyy-MM-dd', new Date())
 
           return (
             <div key={dateKey} className="flex gap-4 pb-6">
