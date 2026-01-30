@@ -41,5 +41,6 @@ export type NotificationWithEvent = BlastWithCreator & {
   event: {
     id: string
     title: string
+    start_time: string
   }
 }

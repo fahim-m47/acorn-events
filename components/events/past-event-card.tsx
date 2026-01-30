@@ -1,0 +1,94 @@
+"use client"
+
+import Link from "next/link"
+import { formatInTimeZone } from "date-fns-tz"
+import { TIMEZONE } from "@/lib/constants"
+import { MapPin } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { EventImage } from "./event-image"
+import { VerifiedBadge } from "./verified-badge"
+import type { EventWithCreator } from "@/types"
+
+interface PastEventCardProps {
+  event: EventWithCreator
+}
+
+// Format host name for display
+const formatHostName = (name: string | null | undefined): { firstName: string; lastName?: string } => {
+  if (!name) return { firstName: "Unknown host" }
+
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) {
+    const firstName = parts[0]
+    if (firstName.length > 10) {
+      return { firstName: firstName.slice(0, 7) + "..." }
+    }
+    return { firstName }
+  }
+
+  const firstName = parts[0]
+  const lastName = parts.slice(1).join(" ")
+
+  if (firstName.length > 10) {
+    return { firstName: firstName.slice(0, 7) + "..." }
+  }
+
+  if (lastName.length > 8) {
+    return { firstName, lastName: lastName[0].toUpperCase() + "." }
+  }
+
+  return { firstName, lastName }
+}
+
+export function PastEventCard({ event }: PastEventCardProps) {
+  return (
+    <Link href={`/events/${event.id}`} className="block group">
+      <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700 opacity-75">
+        <div className="flex p-4 gap-4">
+          {/* Left side - Event info */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <span className="text-sm text-zinc-400">
+              {formatInTimeZone(new Date(event.start_time), TIMEZONE, "h:mm a")} EST
+            </span>
+
+            <h3 className="mt-1 font-semibold text-zinc-100 line-clamp-2 group-hover:text-red-400 transition-colors">
+              {event.title}
+            </h3>
+
+            <div className="mt-1 text-sm text-zinc-500">
+              <span className="flex items-start gap-1">
+                <span className="shrink-0">By</span>
+                <span className="flex flex-col leading-tight">
+                  <span>{formatHostName(event.creator?.name).firstName}</span>
+                  {formatHostName(event.creator?.name).lastName && (
+                    <span className="pl-2">{formatHostName(event.creator?.name).lastName}</span>
+                  )}
+                </span>
+                {event.creator?.is_verified_host && <VerifiedBadge className="shrink-0 mt-0.5" />}
+              </span>
+            </div>
+
+            {event.location && (
+              <div className="mt-1 flex items-center gap-1 text-sm text-zinc-400">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span className="truncate">{event.location}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Right side - Image WITHOUT favorite button */}
+          <div className="relative shrink-0">
+            <div className="w-28 h-28">
+              <EventImage
+                imageUrl={event.image_url}
+                alt={event.title}
+                variant="square"
+                className="w-full h-full rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </Card>
+    </Link>
+  )
+}

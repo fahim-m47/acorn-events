@@ -2,10 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { EVENT_WINDOW_DAYS } from '@/lib/constants'
 import type { NotificationWithEvent } from '@/types'
 
 // Get all notifications for current user (blasts from favorited events)
+// Filters out notifications from events older than 14 days
 export async function getNotifications(): Promise<NotificationWithEvent[]> {
   const supabase = await createServerSupabaseClient()
 
@@ -13,6 +16,9 @@ export async function getNotifications(): Promise<NotificationWithEvent[]> {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  // Calculate cutoff date (14 days ago)
+  const cutoffDate = subDays(new Date(), EVENT_WINDOW_DAYS)
 
   // First, get the user's favorited event IDs
   const { data: favorites, error: favError } = await supabase
@@ -32,13 +38,13 @@ export async function getNotifications(): Promise<NotificationWithEvent[]> {
     return []
   }
 
-  // Get blasts from favorited events
+  // Get blasts from favorited events with event start_time
   const { data, error } = await supabase
     .from('blasts')
     .select(`
       *,
       creator:users(*),
-      event:events!inner(id, title)
+      event:events!inner(id, title, start_time)
     `)
     .in('event_id', favoritedEventIds)
     .order('created_at', { ascending: false })
@@ -48,7 +54,14 @@ export async function getNotifications(): Promise<NotificationWithEvent[]> {
     return []
   }
 
-  return data as unknown as NotificationWithEvent[]
+  // Filter out notifications from events older than 14 days
+  const filtered = (data || []).filter((blast) => {
+    const event = blast.event as { start_time: string }
+    const eventDate = new Date(event.start_time)
+    return eventDate >= cutoffDate
+  })
+
+  return filtered as unknown as NotificationWithEvent[]
 }
 
 // Mark all notifications as seen (update last_read_at)
@@ -81,6 +94,7 @@ export async function markNotificationsAsSeen(): Promise<void> {
 }
 
 // Check if user has unseen notifications
+// Only counts notifications from events within the last 14 days
 export async function hasUnseenNotifications(): Promise<boolean> {
   const supabase = await createServerSupabaseClient()
 
@@ -88,6 +102,9 @@ export async function hasUnseenNotifications(): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return false
+
+  // Calculate cutoff date (14 days ago)
+  const cutoffDate = subDays(new Date(), EVENT_WINDOW_DAYS)
 
   // First, get the user's favorited event IDs
   const { data: favorites, error: favError } = await supabase
@@ -116,20 +133,30 @@ export async function hasUnseenNotifications(): Promise<boolean> {
 
   const lastReadAt = readData?.last_read_at || '1970-01-01T00:00:00Z'
 
-  // Check if there are any blasts from favorited events created after last_read_at
+  // Check if there are any unread blasts from favorited events, including event start_time
   const { data: unreadBlasts, error } = await supabase
     .from('blasts')
-    .select('id')
+    .select(`
+      id,
+      event:events!inner(start_time)
+    `)
     .in('event_id', favoritedEventIds)
     .gt('created_at', lastReadAt)
-    .limit(1)
+    .limit(100)
 
   if (error) {
     console.error('Error checking unseen notifications:', error)
     return false
   }
 
-  return (unreadBlasts?.length ?? 0) > 0
+  // Filter to only count notifications from recent events (within 14 days)
+  const recentUnread = (unreadBlasts || []).filter((blast) => {
+    const event = blast.event as { start_time: string }
+    const eventDate = new Date(event.start_time)
+    return eventDate >= cutoffDate
+  })
+
+  return recentUnread.length > 0
 }
 
 // Get favorited event IDs for the current user (for real-time subscription)

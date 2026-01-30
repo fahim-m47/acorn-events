@@ -1,10 +1,12 @@
 import { z } from 'zod'
 import { fromZonedTime } from 'date-fns-tz'
+import { addMonths, isAfter } from 'date-fns'
 import {
   MAX_TITLE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_LOCATION_LENGTH,
   MAX_BLAST_LENGTH,
+  MAX_EVENT_MONTHS_AHEAD,
   TIMEZONE,
 } from './constants'
 
@@ -35,6 +37,17 @@ const datetimeTransform = z.string().min(1, 'Date/time is required').transform((
     })
     return z.NEVER
   }
+
+  // Check if date is more than 6 months from now
+  const maxDate = addMonths(new Date(), MAX_EVENT_MONTHS_AHEAD)
+  if (isAfter(date, maxDate)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Event must be within 6 months of creation date',
+    })
+    return z.NEVER
+  }
+
   return date.toISOString()
 })
 

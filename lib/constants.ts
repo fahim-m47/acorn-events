@@ -6,5 +6,6 @@ export const MAX_BLAST_LENGTH = 500;
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const EVENT_WINDOW_DAYS = 14;
+export const MAX_EVENT_MONTHS_AHEAD = 6;
 export const APP_NAME = "Acorn";
 export const TIMEZONE = "America/New_York";

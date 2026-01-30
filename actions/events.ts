@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { subMonths, subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createEventSchema } from '@/lib/validations'
+import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS } from '@/lib/constants'
 import type { EventWithCreator, EventInsert, EventUpdate } from '@/types'
 
 // Get upcoming events (next 14 days)
@@ -281,6 +283,7 @@ export async function deleteEvent(eventId: string) {
 export type EventWithSaveCount = EventWithCreator & { save_count: number }
 
 // Get events created by current user (with save counts)
+// Filters out events older than 6 months
 export async function getMyEvents(): Promise<EventWithSaveCount[]> {
   const supabase = await createServerSupabaseClient()
 
@@ -289,7 +292,10 @@ export async function getMyEvents(): Promise<EventWithSaveCount[]> {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Get events with favorites count
+  // Calculate cutoff date (6 months ago)
+  const cutoffDate = subMonths(new Date(), MAX_EVENT_MONTHS_AHEAD)
+
+  // Get events with favorites count, excluding events older than 6 months
   const { data, error } = await supabase
     .from('events')
     .select(
@@ -300,6 +306,7 @@ export async function getMyEvents(): Promise<EventWithSaveCount[]> {
     `
     )
     .eq('creator_id', user.id)
+    .gte('start_time', cutoffDate.toISOString())
     .order('start_time', { ascending: true })
 
   if (error) throw error
@@ -309,4 +316,25 @@ export async function getMyEvents(): Promise<EventWithSaveCount[]> {
     save_count: (event.favorites as { count: number }[])?.[0]?.count || 0,
     creator: event.creator,
   })) as unknown as EventWithSaveCount[]
+}
+
+// Get past events (last 14 days)
+export async function getPastEvents(): Promise<EventWithCreator[]> {
+  const supabase = await createServerSupabaseClient()
+
+  const now = new Date()
+  const cutoffDate = subDays(now, EVENT_WINDOW_DAYS)
+
+  const { data, error } = await supabase
+    .from('events')
+    .select(`
+      *,
+      creator:users(*)
+    `)
+    .lt('start_time', now.toISOString())
+    .gte('start_time', cutoffDate.toISOString())
+    .order('start_time', { ascending: false })
+
+  if (error) throw error
+  return data as unknown as EventWithCreator[]
 }
