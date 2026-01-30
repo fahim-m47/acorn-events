@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
+import { NotificationProvider } from "@/contexts/notification-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,11 +25,13 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
-          <Header />
-          <main className="pt-16">
-            {children}
-          </main>
-          <Toaster />
+          <NotificationProvider>
+            <Header />
+            <main className="pt-16">
+              {children}
+            </main>
+            <Toaster />
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

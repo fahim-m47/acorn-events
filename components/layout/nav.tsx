@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
+import { useNotifications } from '@/contexts/notification-context'
 import { cn } from '@/lib/utils'
 
 interface NavProps {
@@ -23,6 +24,8 @@ const authLinks = [
 export function Nav({ mobile = false, onLinkClick }: NavProps) {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { hasUnseen } = useNotifications()
+  const isOnNotificationsPage = pathname === '/notifications'
 
   const links = user ? [...publicLinks, ...authLinks] : publicLinks
 
@@ -40,7 +43,7 @@ export function Nav({ mobile = false, onLinkClick }: NavProps) {
           href={link.href}
           onClick={onLinkClick}
           className={cn(
-            'text-sm font-medium transition-colors',
+            'relative text-sm font-medium transition-colors',
             mobile
               ? pathname === link.href
                 ? 'text-foreground'
@@ -51,6 +54,9 @@ export function Nav({ mobile = false, onLinkClick }: NavProps) {
           )}
         >
           {link.label}
+          {link.href === '/notifications' && hasUnseen && !isOnNotificationsPage && (
+            <span className="absolute -top-1 -right-2 h-2 w-2 rounded-full bg-red-500" />
+          )}
         </Link>
       ))}
     </nav>
