@@ -176,8 +176,12 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   }
 
   // Handle image upload if provided
+  // Handle image upload if provided
   const imageFile = formData.get('image') as File | null
+  const removeImage = formData.get('remove_image') === 'true'
+  
   let image_url: string | null = existing.image_url
+
   if (imageFile && imageFile.size > 0) {
     // Upload to Supabase storage
     const fileName = `${user.id}/${Date.now()}-${imageFile.name}`
@@ -185,12 +189,19 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
       .from('event-images')
       .upload(fileName, imageFile)
 
-    if (!uploadError && uploadData) {
+    if (uploadError) {
+      console.error('Image upload error:', uploadError)
+      return { error: 'Failed to upload image. Please try again.' }
+    }
+
+    if (uploadData) {
       const {
         data: { publicUrl },
       } = supabase.storage.from('event-images').getPublicUrl(uploadData.path)
       image_url = publicUrl
     }
+  } else if (removeImage) {
+    image_url = null
   }
 
   // Update event

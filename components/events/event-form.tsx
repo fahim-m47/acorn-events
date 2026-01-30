@@ -150,6 +150,11 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
               onChange={handleImageChange}
               className="hidden"
             />
+            <input 
+              type="hidden" 
+              name="remove_image" 
+              value={imagePreview ? "false" : "true"} 
+            />
           </div>
         </div>
 
