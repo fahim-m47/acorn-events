@@ -51,7 +51,7 @@ export function PastEventsTimelineView({ events }: PastEventsTimelineViewProps) 
               </div>
 
               {/* Events column */}
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 min-w-0 space-y-4">
                 {dateEvents.map((event) => (
                   <PastEventCard key={event.id} event={event} />
                 ))}

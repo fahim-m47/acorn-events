@@ -48,7 +48,7 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
 
 export function EventCard({ event, initialFavorited = false }: EventCardProps) {
   return (
-    <Link href={`/events/${event.id}`} className="block group">
+    <Link href={`/events/${event.id}`} className="block group w-full">
       <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700">
         <div className="flex p-4 gap-4">
           {/* Left side - Event info */}
@@ -75,9 +75,9 @@ export function EventCard({ event, initialFavorited = false }: EventCardProps) {
             </div>
 
             {event.location && (
-              <div className="mt-1 flex items-center gap-1 text-sm text-zinc-400">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <span className="truncate">{event.location}</span>
+              <div className="mt-1 flex items-start gap-1 text-sm text-zinc-400 min-w-0">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span className="line-clamp-2">{event.location}</span>
               </div>
             )}
           </div>

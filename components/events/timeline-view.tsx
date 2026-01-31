@@ -54,7 +54,7 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
               </div>
 
               {/* All events in one column - ensures consistent alignment */}
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 min-w-0 space-y-4">
                 {dateEvents.map((event) => (
                   <EventCard
                     key={event.id}
