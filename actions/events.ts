@@ -236,7 +236,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
 }
 
 // Delete event (verify ownership)
-export async function deleteEvent(eventId: string) {
+export async function deleteEvent(eventId: string): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createServerSupabaseClient()
 
   // Check auth
@@ -252,12 +252,15 @@ export async function deleteEvent(eventId: string) {
     .eq('id', eventId)
     .single()
 
-  if (fetchError) throw fetchError
-  if (!existingEvent) throw new Error('Event not found')
+  if (fetchError) {
+    console.error('Fetch error:', fetchError)
+    return { error: 'Event not found' }
+  }
+  if (!existingEvent) return { error: 'Event not found' }
 
   const existing = existingEvent as { creator_id: string; image_url: string | null }
   if (existing.creator_id !== user.id) {
-    throw new Error('You do not have permission to delete this event')
+    return { error: 'You do not have permission to delete this event' }
   }
 
   // Delete the image from storage if it exists
@@ -273,10 +276,13 @@ export async function deleteEvent(eventId: string) {
   // Delete event (cascades to favorites and blasts via RLS)
   const { error } = await supabase.from('events').delete().eq('id', eventId)
 
-  if (error) throw error
+  if (error) {
+    console.error('Delete error:', error)
+    return { error: 'Failed to delete event. Please try again.' }
+  }
 
   revalidatePath('/')
-  redirect('/')
+  return { success: true }
 }
 
 // Extended type for events with save count

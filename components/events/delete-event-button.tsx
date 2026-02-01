@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,14 +22,22 @@ interface DeleteEventButtonProps {
 }
 
 export function DeleteEventButton({ eventId }: DeleteEventButtonProps) {
+  const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [open, setOpen] = useState(false)
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await deleteEvent(eventId)
-      // Server action handles redirect after deletion
+      const result = await deleteEvent(eventId)
+      if (result?.error) {
+        console.error('Failed to delete event:', result.error)
+        setIsDeleting(false)
+        setOpen(false)
+        return
+      }
+      // Success - navigate to home
+      router.push('/')
     } catch (error) {
       console.error('Failed to delete event:', error)
       setIsDeleting(false)
