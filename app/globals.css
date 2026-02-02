@@ -40,10 +40,10 @@
 .header-gradient {
   background: linear-gradient(
     180deg,
-    rgba(61, 14, 16, 0.6) 0%,
-    rgba(61, 14, 16, 0.35) 30%,
-    rgba(61, 14, 16, 0.15) 60%,
-    rgba(0, 0, 0, 0.05) 85%,
+    rgba(61, 14, 16, 0.95) 0%,
+    rgba(61, 14, 16, 0.65) 30%,
+    rgba(61, 14, 16, 0.35) 60%,
+    rgba(0, 0, 0, 0.08) 85%,
     transparent 100%
   );
 }
