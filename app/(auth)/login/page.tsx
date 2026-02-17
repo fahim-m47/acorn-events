@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { Button } from '@/components/ui/button'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
@@ -140,5 +140,47 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+function LoginPageFallback() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
+      <div className="w-full max-w-sm space-y-8 text-center">
+        <div className="space-y-4">
+          <Image
+            src="/images/acorn_white.png"
+            alt="Haver Events"
+            width={64}
+            height={64}
+            className="mx-auto"
+          />
+          <p className="text-gray-400">
+            Discover what&apos;s happening at Haverford
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm text-gray-400">
+            Sign in with your @haverford.edu email
+          </p>
+          <Button
+            disabled
+            className="w-full bg-white text-black hover:bg-gray-100 font-medium"
+            size="lg"
+          >
+            Loading...
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
