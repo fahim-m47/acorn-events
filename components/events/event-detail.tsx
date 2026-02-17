@@ -10,7 +10,8 @@ import { EventImage } from "./event-image"
 import { VerifiedBadge } from "./verified-badge"
 import { FavoriteButton } from "./favorite-button"
 import { DeleteEventButton } from "./delete-event-button"
-import type { EventWithCreator } from "@/types"
+import { RsvpControls } from "./rsvp-controls"
+import type { EventWithCreator, EventCapacitySnapshot } from "@/types"
 
 interface EventDetailProps {
   event: EventWithCreator
@@ -18,10 +19,19 @@ interface EventDetailProps {
   currentUserId?: string | null
   initialFavorited?: boolean
   showFavoriteButton?: boolean
+  capacitySnapshot?: EventCapacitySnapshot | null
 }
 
-export function EventDetail({ event, isOwner, currentUserId, initialFavorited, showFavoriteButton }: EventDetailProps) {
+export function EventDetail({
+  event,
+  isOwner,
+  currentUserId,
+  initialFavorited,
+  showFavoriteButton,
+  capacitySnapshot,
+}: EventDetailProps) {
   const isCreator = isOwner ?? (currentUserId ? event.creator_id === currentUserId : false)
+  const isAuthenticated = !!currentUserId
   const startDate = new Date(event.start_time)
   const endDate = event.end_time ? new Date(event.end_time) : null
 
@@ -77,6 +87,39 @@ export function EventDetail({ event, isOwner, currentUserId, initialFavorited, s
             </div>
           )}
         </div>
+
+        {capacitySnapshot && (
+          <div className="mt-6 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+                  Seats Remaining
+                </h2>
+                <p className="text-zinc-200">
+                  {capacitySnapshot.seatsRemaining} of {capacitySnapshot.capacity} seats left
+                </p>
+                {capacitySnapshot.isFull && (
+                  <p className="text-sm text-amber-300">This event is at max capacity.</p>
+                )}
+                {capacitySnapshot.userStatus === "waitlist" && capacitySnapshot.waitlistPosition && (
+                  <p className="text-sm text-amber-300">
+                    Your waitlist position: #{capacitySnapshot.waitlistPosition}
+                  </p>
+                )}
+              </div>
+
+              {!isCreator && (
+                <RsvpControls
+                  eventId={event.id}
+                  isAuthenticated={isAuthenticated}
+                  isFull={capacitySnapshot.isFull}
+                  userStatus={capacitySnapshot.userStatus}
+                  waitlistPosition={capacitySnapshot.waitlistPosition}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 flex items-center gap-3 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
           <Avatar>

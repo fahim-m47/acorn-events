@@ -68,12 +68,30 @@ const optionalDatetimeTransform = z
     return date.toISOString()
   })
 
+const optionalCapacityTransform = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((val, ctx) => {
+    if (!val) return null
+
+    const parsed = Number(val)
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Capacity must be a whole number of at least 1',
+      })
+      return z.NEVER
+    }
+
+    return parsed
+  })
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(MAX_TITLE_LENGTH),
   description: z.string().max(MAX_DESCRIPTION_LENGTH).optional(),
   location: z.string().min(1, 'Location is required').max(MAX_LOCATION_LENGTH),
   start_time: datetimeTransform,
   end_time: optionalDatetimeTransform,
+  capacity: optionalCapacityTransform,
   link: z
     .string()
     .url('Invalid URL')

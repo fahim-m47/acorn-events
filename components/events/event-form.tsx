@@ -307,6 +307,7 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
                     name="capacity"
                     type="number"
                     min="1"
+                    required
                     placeholder="Enter max attendees"
                     defaultValue={initialData?.capacity || ""}
                     className="bg-haver-dark-red/20 border-haver-dark-red/40 focus:border-haver-dark-red w-40"

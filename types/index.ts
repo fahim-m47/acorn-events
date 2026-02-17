@@ -15,6 +15,10 @@ export type Favorite = Database['public']['Tables']['favorites']['Row']
 export type FavoriteInsert = Database['public']['Tables']['favorites']['Insert']
 export type FavoriteUpdate = Database['public']['Tables']['favorites']['Update']
 
+export type EventRegistration = Database['public']['Tables']['event_registrations']['Row']
+export type EventRegistrationInsert = Database['public']['Tables']['event_registrations']['Insert']
+export type EventRegistrationUpdate = Database['public']['Tables']['event_registrations']['Update']
+
 export type Blast = Database['public']['Tables']['blasts']['Row']
 export type BlastInsert = Database['public']['Tables']['blasts']['Insert']
 export type BlastUpdate = Database['public']['Tables']['blasts']['Update']
@@ -34,6 +38,29 @@ export type BlastWithCreator = Blast & {
 
 export type EventWithBlasts = EventWithCreator & {
   blasts: BlastWithCreator[]
+}
+
+export type RegistrationStatus = 'going' | 'waitlist'
+
+export type EventCapacitySnapshot = {
+  capacity: number
+  seatsRemaining: number
+  goingCount: number
+  waitlistCount: number
+  isFull: boolean
+  userStatus: RegistrationStatus | null
+  waitlistPosition: number | null
+}
+
+export type RsvpAttendee = {
+  id: string
+  name: string | null
+  email: string
+}
+
+export type SavedEventWithStatus = EventWithCreator & {
+  isFavorited: boolean
+  registrationStatus: RegistrationStatus | null
 }
 
 // Notification types

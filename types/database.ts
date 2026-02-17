@@ -37,6 +37,7 @@ export type Database = {
           location: string
           start_time: string
           end_time: string | null
+          capacity: number | null
           image_url: string | null
           link: string | null
           created_at: string
@@ -50,6 +51,7 @@ export type Database = {
           location: string
           start_time: string
           end_time?: string | null
+          capacity?: number | null
           image_url?: string | null
           link?: string | null
           created_at?: string
@@ -63,6 +65,7 @@ export type Database = {
           location?: string
           start_time?: string
           end_time?: string | null
+          capacity?: number | null
           image_url?: string | null
           link?: string | null
           created_at?: string
@@ -110,6 +113,54 @@ export type Database = {
             columns: ['event_id']
             isOneToOne: false
             referencedRelation: 'events'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      event_registrations: {
+        Row: {
+          id: string
+          event_id: string
+          user_id: string
+          status: 'going' | 'waitlist'
+          created_at: string
+          updated_at: string
+          waitlisted_at: string | null
+          going_at: string | null
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          user_id: string
+          status: 'going' | 'waitlist'
+          created_at?: string
+          updated_at?: string
+          waitlisted_at?: string | null
+          going_at?: string | null
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          user_id?: string
+          status?: 'going' | 'waitlist'
+          created_at?: string
+          updated_at?: string
+          waitlisted_at?: string | null
+          going_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_registrations_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'event_registrations_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
             referencedColumns: ['id']
           }
         ]
@@ -184,7 +235,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_event_capacity_snapshot: {
+        Args: {
+          p_event_id: string
+        }
+        Returns: {
+          capacity: number
+          seats_remaining: number
+          going_count: number
+          waitlist_count: number
+          is_full: boolean
+          user_status: string | null
+          waitlist_position: number | null
+        }[]
+      }
+      join_event: {
+        Args: {
+          p_event_id: string
+        }
+        Returns: string
+      }
+      leave_event: {
+        Args: {
+          p_event_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

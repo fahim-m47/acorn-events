@@ -67,6 +67,7 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
     location: formData.get('location'),
     start_time: formData.get('start_time'),
     end_time: formData.get('end_time'),
+    capacity: formData.get('capacity'),
     link: formData.get('link'),
   }
 
@@ -107,6 +108,7 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
     location: validated.location,
     start_time: validated.start_time,
     end_time: validated.end_time,
+    capacity: validated.capacity,
     link: validated.link,
     image_url,
   }
@@ -163,6 +165,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
     location: formData.get('location'),
     start_time: formData.get('start_time'),
     end_time: formData.get('end_time'),
+    capacity: formData.get('capacity'),
     link: formData.get('link'),
   }
 
@@ -213,6 +216,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
     location: validated.location,
     start_time: validated.start_time,
     end_time: validated.end_time,
+    capacity: validated.capacity,
     link: validated.link,
     image_url,
     updated_at: new Date().toISOString(),

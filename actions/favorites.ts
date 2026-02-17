@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { EventWithCreator } from '@/types'
+import type { RegistrationStatus, SavedEventWithStatus } from '@/types'
 
 // Get user's saved events
-export async function getSavedEvents(): Promise<EventWithCreator[]> {
+export async function getSavedEvents(): Promise<SavedEventWithStatus[]> {
   const supabase = await createServerSupabaseClient()
 
   const {
@@ -14,25 +14,75 @@ export async function getSavedEvents(): Promise<EventWithCreator[]> {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data, error } = await supabase
-    .from('favorites')
-    .select(
+  const [favoritesResult, registrationsResult] = await Promise.all([
+    supabase
+      .from('favorites')
+      .select(
+        `
+        event:events(
+          *,
+          creator:users(*)
+        )
       `
-      event:events(
-        *,
-        creator:users(*)
       )
-    `
-    )
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+      .eq('user_id', user.id),
+    supabase
+      .from('event_registrations')
+      .select(
+        `
+        status,
+        event:events(
+          *,
+          creator:users(*)
+        )
+      `
+      )
+      .eq('user_id', user.id)
+      .in('status', ['going', 'waitlist']),
+  ])
 
-  if (error) throw error
+  if (favoritesResult.error) throw favoritesResult.error
+  if (registrationsResult.error) throw registrationsResult.error
 
-  // Extract events from the join result and filter out null events
-  return (data || [])
-    .map((f) => f.event)
-    .filter(Boolean) as unknown as EventWithCreator[]
+  const eventMap = new Map<string, SavedEventWithStatus>()
+
+  for (const favorite of favoritesResult.data || []) {
+    const event = favorite.event
+    if (!event) continue
+
+    eventMap.set(event.id, {
+      ...(event as SavedEventWithStatus),
+      isFavorited: true,
+      registrationStatus: null,
+    })
+  }
+
+  for (const registration of registrationsResult.data || []) {
+    const event = registration.event
+    if (!event) continue
+    if (event.creator_id === user.id) continue
+
+    const existing = eventMap.get(event.id)
+    const status = registration.status as RegistrationStatus
+
+    if (existing) {
+      eventMap.set(event.id, {
+        ...existing,
+        registrationStatus: status,
+      })
+      continue
+    }
+
+    eventMap.set(event.id, {
+      ...(event as SavedEventWithStatus),
+      isFavorited: false,
+      registrationStatus: status,
+    })
+  }
+
+  return Array.from(eventMap.values()).sort((a, b) => {
+    return new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+  })
 }
 
 // Toggle favorite status

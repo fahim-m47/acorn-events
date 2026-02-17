@@ -13,13 +13,13 @@ interface NavProps {
 
 const publicLinks = [
   { href: '/', label: 'Home' },
+  { href: '/past-events', label: 'Past Events' },
 ]
 
 const authLinks = [
   { href: '/saved', label: 'Saved' },
   { href: '/notifications', label: 'Notifications' },
   { href: '/my-events', label: 'My Events' },
-  { href: '/past-events', label: 'Past Events' },
 ]
 
 export function Nav({ mobile = false, onLinkClick }: NavProps) {

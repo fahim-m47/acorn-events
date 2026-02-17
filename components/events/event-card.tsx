@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card"
 import { EventImage } from "./event-image"
 import { FavoriteButton } from "./favorite-button"
 import { VerifiedBadge } from "./verified-badge"
-import type { EventWithCreator } from "@/types"
+import type { EventWithCreator, RegistrationStatus } from "@/types"
 
 interface EventCardProps {
   event: EventWithCreator
   initialFavorited?: boolean
+  registrationStatus?: RegistrationStatus | null
 }
 
 // Format host name for display: two lines if needed, truncate/initial for long names
@@ -46,7 +47,18 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
   return { firstName, lastName }
 }
 
-export function EventCard({ event, initialFavorited = false }: EventCardProps) {
+export function EventCard({
+  event,
+  initialFavorited = false,
+  registrationStatus = null,
+}: EventCardProps) {
+  const registrationLabel =
+    registrationStatus === "going"
+      ? "Going"
+      : registrationStatus === "waitlist"
+      ? "Waitlisted"
+      : null
+
   return (
     <Link href={`/events/${event.id}`} className="block group w-full">
       <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700">
@@ -92,6 +104,17 @@ export function EventCard({ event, initialFavorited = false }: EventCardProps) {
                 className="w-full h-full rounded-lg"
               />
             </div>
+            {registrationLabel && (
+              <div
+                className={`absolute bottom-1 right-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border backdrop-blur-sm ${
+                  registrationStatus === "going"
+                    ? "border-emerald-300/60 bg-emerald-500/20 text-emerald-100"
+                    : "border-amber-300/60 bg-amber-500/20 text-amber-100"
+                }`}
+              >
+                {registrationLabel}
+              </div>
+            )}
             <div
               className="absolute top-1 right-1"
               onClick={(e) => e.preventDefault()}
