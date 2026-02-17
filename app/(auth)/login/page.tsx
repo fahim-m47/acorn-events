@@ -1,13 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { sanitizeRedirectPath } from '@/lib/auth-redirect'
 import { Button } from '@/components/ui/button'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const nextPath = sanitizeRedirectPath(searchParams.get('next'))
+
+  useEffect(() => {
+    const errorFromQuery = searchParams.get('error')
+    setError(errorFromQuery)
+  }, [searchParams])
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
@@ -15,11 +24,15 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
+      const callbackUrl = new URL('/callback', window.location.origin)
+      if (nextPath !== '/') {
+        callbackUrl.searchParams.set('next', nextPath)
+      }
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/callback`,
+          redirectTo: callbackUrl.toString(),
           queryParams: {
             hd: 'haverford.edu',
           },

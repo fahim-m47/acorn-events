@@ -3,12 +3,13 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { buildLoginPath } from '@/lib/auth-redirect'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signIn: () => void
+  signIn: (redirectPath?: string) => void
   signOut: () => Promise<void>
 }
 
@@ -54,7 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signIn = useCallback(() => router.push('/login'), [router])
+  const signIn = useCallback(
+    (redirectPath?: string) => {
+      router.push(buildLoginPath(redirectPath))
+    },
+    [router]
+  )
 
   const signOut = useCallback(async () => {
     const supabase = createClient()

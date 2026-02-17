@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { buildLoginPath, CREATE_EVENT_PATH } from '@/lib/auth-redirect'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { EventForm } from '@/components/events/event-form'
 import { createEvent } from '@/actions/events'
@@ -9,7 +10,7 @@ export default async function NewEventPage() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) redirect(buildLoginPath(CREATE_EVENT_PATH))
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

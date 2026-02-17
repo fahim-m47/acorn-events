@@ -4,12 +4,15 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
+import { CREATE_EVENT_PATH } from '@/lib/auth-redirect'
 import { CurrentTime } from './current-time'
 import { UserMenu } from '@/components/auth/user-menu'
 import { NotificationBell } from './notification-bell'
 
 export function HeaderActions() {
   const { user, loading, signIn, signOut } = useAuth()
+  const createEventButtonClasses =
+    'bg-red-600 px-4 text-white hover:bg-red-700 hover:text-white'
 
   if (loading) {
     return (
@@ -20,42 +23,37 @@ export function HeaderActions() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex items-center gap-4">
-        <CurrentTime />
-        <Button
-          onClick={signIn}
-          variant="ghost"
-          className="text-white hover:bg-white/10 hover:text-white"
-        >
-          Sign in
-        </Button>
-      </div>
-    )
-  }
-
   return (
     <div className="flex items-center gap-4">
       <CurrentTime />
 
       {/* Create Event Link */}
-      <Button
-        asChild
-        variant="ghost"
-        className="text-white hover:bg-white/10 hover:text-white"
-      >
-        <Link href="/events/new" className="flex items-center gap-2">
+      {user ? (
+        <Button asChild className={createEventButtonClasses}>
+          <Link href={CREATE_EVENT_PATH} className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            <span>Create Event</span>
+          </Link>
+        </Button>
+      ) : (
+        <Button
+          onClick={() => signIn(CREATE_EVENT_PATH)}
+          className={createEventButtonClasses}
+        >
           <Plus className="h-5 w-5" />
-          <span className="hidden md:inline">Create Event</span>
-        </Link>
-      </Button>
+          <span>Create Event</span>
+        </Button>
+      )}
 
-      {/* Notifications */}
-      <NotificationBell />
+      {user && (
+        <>
+          {/* Notifications */}
+          <NotificationBell />
 
-      {/* User Menu */}
-      <UserMenu user={user} onSignOut={signOut} />
+          {/* User Menu */}
+          <UserMenu user={user} onSignOut={signOut} />
+        </>
+      )}
     </div>
   )
 }

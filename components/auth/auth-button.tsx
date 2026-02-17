@@ -15,7 +15,7 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <Button onClick={signIn} variant="default">
+      <Button onClick={() => signIn()} variant="default">
         Sign in
       </Button>
     )
