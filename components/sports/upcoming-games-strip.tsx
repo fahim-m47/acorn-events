@@ -103,7 +103,7 @@ export function UpcomingGamesStrip({ games }: UpcomingGamesStripProps) {
                     vs. {game.opponent}
                   </h3>
 
-                  <div className="mt-0.5 flex items-center gap-2 text-sm text-zinc-400">
+                  <div className="mt-0.5 flex items-center gap-2 text-sm text-zinc-100">
                     <span>{game.time}</span>
                     <span className="text-zinc-600">·</span>
                     <span className="inline-flex items-center gap-1">
@@ -123,7 +123,7 @@ export function UpcomingGamesStrip({ games }: UpcomingGamesStripProps) {
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs text-zinc-600">
+                  <p className="mt-2 text-xs text-zinc-100">
                     {formatGameDate(game.startDate)}
                   </p>
                 </Link>
