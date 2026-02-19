@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronDown, ExternalLink } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,13 +33,22 @@ export function SportsMenu({ mobile = false, onLinkClick }: SportsMenuProps) {
               </p>
               <ul className="space-y-1">
                 {category.sports.map((sport) => (
-                  <li key={sport.href}>
-                    <a
-                      href={sport.href}
+                  <li key={sport.slug} className="flex items-center gap-1.5">
+                    <Link
+                      href={`/sports/${sport.slug}`}
                       onClick={onLinkClick}
                       className="text-sm text-foreground/85 transition-colors hover:text-foreground"
                     >
                       {sport.label}
+                    </Link>
+                    <a
+                      href={sport.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+                    >
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   </li>
                 ))}
@@ -77,8 +87,28 @@ export function SportsMenu({ mobile = false, onLinkClick }: SportsMenuProps) {
               </DropdownMenuLabel>
               <div className="space-y-1">
                 {category.sports.map((sport) => (
-                  <DropdownMenuItem key={sport.href} asChild className="cursor-pointer">
-                    <a href={sport.href}>{sport.label}</a>
+                  <DropdownMenuItem
+                    key={sport.slug}
+                    asChild
+                    className="cursor-pointer"
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <Link
+                        href={`/sports/${sport.slug}`}
+                        className="flex-1"
+                      >
+                        {sport.label}
+                      </Link>
+                      <a
+                        href={sport.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-2 text-muted-foreground/40 transition-colors hover:text-muted-foreground"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </div>

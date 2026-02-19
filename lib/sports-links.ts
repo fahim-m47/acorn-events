@@ -3,6 +3,7 @@ const HAVERFORD_SPORTS_BASE_URL = 'https://haverfordathletics.com/sports'
 export interface SportLink {
   label: string
   href: string
+  slug: string
 }
 
 export interface SportCategory {
@@ -10,92 +11,55 @@ export interface SportCategory {
   sports: SportLink[]
 }
 
+function sportEntry(label: string, slug: string): SportLink {
+  return { label, href: `${HAVERFORD_SPORTS_BASE_URL}/${slug}`, slug }
+}
+
 export const SPORTS_CATEGORIES: SportCategory[] = [
   {
     label: "Men's Sports",
     sports: [
-      { label: 'Baseball', href: `${HAVERFORD_SPORTS_BASE_URL}/baseball` },
-      {
-        label: "Men's Basketball",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-basketball`,
-      },
-      {
-        label: "Men's Cross Country",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-cross-country`,
-      },
-      {
-        label: "Men's Fencing",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-fencing`,
-      },
-      {
-        label: "Men's Lacrosse",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-lacrosse`,
-      },
-      { label: "Men's Soccer", href: `${HAVERFORD_SPORTS_BASE_URL}/msoc` },
-      {
-        label: "Men's Squash",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-squash`,
-      },
-      { label: "Men's Tennis", href: `${HAVERFORD_SPORTS_BASE_URL}/mten` },
-      {
-        label: "Men's Indoor Track & Field",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-indoor-track`,
-      },
-      {
-        label: "Men's Outdoor Track & Field",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/mens-track-and-field`,
-      },
+      sportEntry('Baseball', 'baseball'),
+      sportEntry("Men's Basketball", 'mens-basketball'),
+      sportEntry("Men's Cross Country", 'mens-cross-country'),
+      sportEntry("Men's Fencing", 'mens-fencing'),
+      sportEntry("Men's Lacrosse", 'mens-lacrosse'),
+      sportEntry("Men's Soccer", 'msoc'),
+      sportEntry("Men's Squash", 'mens-squash'),
+      sportEntry("Men's Tennis", 'mten'),
+      sportEntry("Men's Indoor Track & Field", 'mens-indoor-track'),
+      sportEntry("Men's Outdoor Track & Field", 'mens-track-and-field'),
     ],
   },
   {
     label: "Women's Sports",
     sports: [
-      {
-        label: "Women's Basketball",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-basketball`,
-      },
-      {
-        label: "Women's Cross Country",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-cross-country`,
-      },
-      {
-        label: "Women's Fencing",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-fencing`,
-      },
-      {
-        label: 'Field Hockey',
-        href: `${HAVERFORD_SPORTS_BASE_URL}/field-hockey`,
-      },
-      {
-        label: "Women's Lacrosse",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-lacrosse`,
-      },
-      {
-        label: "Women's Soccer",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/wsoc`,
-      },
-      { label: 'Softball', href: `${HAVERFORD_SPORTS_BASE_URL}/softball` },
-      {
-        label: "Women's Squash",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-squash`,
-      },
-      { label: "Women's Tennis", href: `${HAVERFORD_SPORTS_BASE_URL}/wten` },
-      {
-        label: "Women's Indoor Track & Field",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-indoor-track`,
-      },
-      {
-        label: "Women's Outdoor Track & Field",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-track-and-field`,
-      },
-      {
-        label: "Women's Volleyball",
-        href: `${HAVERFORD_SPORTS_BASE_URL}/womens-volleyball`,
-      },
+      sportEntry("Women's Basketball", 'womens-basketball'),
+      sportEntry("Women's Cross Country", 'womens-cross-country'),
+      sportEntry("Women's Fencing", 'womens-fencing'),
+      sportEntry('Field Hockey', 'field-hockey'),
+      sportEntry("Women's Lacrosse", 'womens-lacrosse'),
+      sportEntry("Women's Soccer", 'wsoc'),
+      sportEntry('Softball', 'softball'),
+      sportEntry("Women's Squash", 'womens-squash'),
+      sportEntry("Women's Tennis", 'wten'),
+      sportEntry("Women's Indoor Track & Field", 'womens-indoor-track'),
+      sportEntry("Women's Outdoor Track & Field", 'womens-track-and-field'),
+      sportEntry("Women's Volleyball", 'womens-volleyball'),
     ],
   },
   {
     label: 'Co-Ed',
-    sports: [{ label: 'Cricket', href: `${HAVERFORD_SPORTS_BASE_URL}/cricket` }],
+    sports: [sportEntry('Cricket', 'cricket')],
   },
 ]
+
+const allSports = SPORTS_CATEGORIES.flatMap((c) => c.sports)
+
+export function getSportBySlug(slug: string): SportLink | undefined {
+  return allSports.find((s) => s.slug === slug)
+}
+
+export function getAllSportSlugs(): string[] {
+  return allSports.map((s) => s.slug)
+}
