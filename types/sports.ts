@@ -12,6 +12,10 @@ export interface Game {
   isWin: boolean | null // null if game hasn't been played
 }
 
+export interface UpcomingGame extends Game {
+  sportLabel: string
+}
+
 export interface SportSchedule {
   sportTitle: string
   season: string

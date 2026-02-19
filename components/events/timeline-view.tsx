@@ -5,13 +5,20 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { TIMEZONE } from "@/lib/constants"
 import { EventCard } from './event-card'
 import type { EventWithCreator } from '@/types'
+import type { UpcomingGame } from '@/types/sports'
+import { UpcomingGamesStrip } from '@/components/sports/upcoming-games-strip'
 
 interface TimelineViewProps {
   events: EventWithCreator[]
   favoritedEventIds?: string[]
+  upcomingGames?: UpcomingGame[]
 }
 
-export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewProps) {
+export function TimelineView({
+  events,
+  favoritedEventIds = [],
+  upcomingGames = [],
+}: TimelineViewProps) {
   // Group events by date
   const groupedEvents = events.reduce<Record<string, EventWithCreator[]>>((groups, event) => {
     // Use EST date for grouping so events appear in the correct bucket
@@ -30,6 +37,10 @@ export function TimelineView({ events, favoritedEventIds = [] }: TimelineViewPro
     <div className="relative">
       {/* Date groups */}
       <div className="relative">
+        <div className="pb-6">
+          <UpcomingGamesStrip games={upcomingGames} />
+        </div>
+
         {sortedDateKeys.map((dateKey) => {
           const dateEvents = groupedEvents[dateKey]
           // Parse as local date to ensure it displays exactly as listed (prevent timezone shifts)

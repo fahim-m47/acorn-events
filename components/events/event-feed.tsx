@@ -3,13 +3,19 @@
 import { Calendar } from "lucide-react"
 import { TimelineView } from "./timeline-view"
 import type { EventWithCreator } from "@/types"
+import type { UpcomingGame } from "@/types/sports"
 
 interface EventFeedProps {
   events: EventWithCreator[]
   favoritedEventIds?: string[]
+  upcomingGames?: UpcomingGame[]
 }
 
-export function EventFeed({ events, favoritedEventIds }: EventFeedProps) {
+export function EventFeed({
+  events,
+  favoritedEventIds,
+  upcomingGames = [],
+}: EventFeedProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -25,6 +31,10 @@ export function EventFeed({ events, favoritedEventIds }: EventFeedProps) {
   }
 
   return (
-    <TimelineView events={events} favoritedEventIds={favoritedEventIds} />
+    <TimelineView
+      events={events}
+      favoritedEventIds={favoritedEventIds}
+      upcomingGames={upcomingGames}
+    />
   )
 }
