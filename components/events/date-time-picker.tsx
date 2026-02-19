@@ -326,9 +326,9 @@ export function DateTimePicker({
               </div>
 
               <div className="grid grid-cols-7 gap-1.5">
-                {WEEKDAY_LABELS.map((label) => (
+                {WEEKDAY_LABELS.map((label, i) => (
                   <span
-                    key={label}
+                    key={i}
                     className="text-center text-sm font-medium uppercase tracking-wide text-zinc-500"
                   >
                     {label}

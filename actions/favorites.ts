@@ -21,7 +21,7 @@ export async function getSavedEvents(): Promise<SavedEventWithStatus[]> {
         `
         event:events(
           *,
-          creator:users(*)
+          creator:users(id, name, avatar_url, is_verified_host)
         )
       `
       )
@@ -33,7 +33,7 @@ export async function getSavedEvents(): Promise<SavedEventWithStatus[]> {
         status,
         event:events(
           *,
-          creator:users(*)
+          creator:users(id, name, avatar_url, is_verified_host)
         )
       `
       )

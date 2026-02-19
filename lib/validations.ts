@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { fromZonedTime } from 'date-fns-tz'
-import { addMonths, isAfter } from 'date-fns'
+import { addMonths, isAfter, isBefore } from 'date-fns'
 import {
   MAX_TITLE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
@@ -35,6 +35,15 @@ const datetimeTransform = z.string().min(1, 'Date/time is required').transform((
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Invalid date/time',
+    })
+    return z.NEVER
+  }
+
+  // Check if date is in the past
+  if (isBefore(date, new Date())) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Event must be in the future',
     })
     return z.NEVER
   }
@@ -108,7 +117,10 @@ export const createEventSchema = z.object({
     .optional()
     .or(z.literal(''))
     .transform((v) => v || null),
-})
+}).refine(
+  (data) => !data.end_time || new Date(data.end_time) > new Date(data.start_time),
+  { message: 'End time must be after start time', path: ['end_time'] }
+)
 
 export const createBlastSchema = z.object({
   content: z.string().min(1, 'Content is required').max(MAX_BLAST_LENGTH),

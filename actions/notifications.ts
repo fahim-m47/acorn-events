@@ -43,7 +43,7 @@ export async function getNotifications(): Promise<NotificationWithEvent[]> {
     .from('blasts')
     .select(`
       *,
-      creator:users(*),
+      creator:users(id, name, avatar_url, is_verified_host),
       event:events!inner(id, title, start_time)
     `)
     .in('event_id', favoritedEventIds)
@@ -142,6 +142,7 @@ export async function hasUnseenNotifications(): Promise<boolean> {
     `)
     .in('event_id', favoritedEventIds)
     .gt('created_at', lastReadAt)
+    .order('created_at', { ascending: false })
     .limit(100)
 
   if (error) {

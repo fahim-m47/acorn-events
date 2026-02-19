@@ -27,13 +27,16 @@ export type NotificationRead = Database['public']['Tables']['notification_reads'
 export type NotificationReadInsert = Database['public']['Tables']['notification_reads']['Insert']
 export type NotificationReadUpdate = Database['public']['Tables']['notification_reads']['Update']
 
+// Public-facing user fields only (no email)
+export type PublicUser = Pick<User, 'id' | 'name' | 'avatar_url' | 'is_verified_host'>
+
 // Extended types with relationships
 export type EventWithCreator = Event & {
-  creator: User
+  creator: PublicUser
 }
 
 export type BlastWithCreator = Blast & {
-  creator: User
+  creator: PublicUser
 }
 
 export type EventWithBlasts = EventWithCreator & {

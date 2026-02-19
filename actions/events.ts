@@ -3,15 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { subMonths, subDays } from 'date-fns'
+import { addDays, subMonths, subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createEventSchema } from '@/lib/validations'
-import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS } from '@/lib/constants'
+import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS, MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES } from '@/lib/constants'
 import { getEventPath } from '@/lib/event-url'
 import { canUserOverrideEventHost } from '@/lib/host-override-access'
 import type { EventWithCreator, EventInsert, EventUpdate } from '@/types'
 
-// Get upcoming events (next 14 days)
+// Get upcoming events (next 30 days)
 export async function getEvents(): Promise<EventWithCreator[]> {
   const supabase = await createServerSupabaseClient()
 
@@ -19,9 +19,10 @@ export async function getEvents(): Promise<EventWithCreator[]> {
     .from('events')
     .select(`
       *,
-      creator:users(*)
+      creator:users(id, name, avatar_url, is_verified_host)
     `)
     .gte('start_time', new Date().toISOString())
+    .lte('start_time', addDays(new Date(), EVENT_WINDOW_DAYS).toISOString())
     .order('start_time', { ascending: true })
 
   if (error) throw error
@@ -36,7 +37,7 @@ export async function getEvent(id: string): Promise<EventWithCreator | null> {
     .from('events')
     .select(`
       *,
-      creator:users(*)
+      creator:users(id, name, avatar_url, is_verified_host)
     `)
     .eq('id', id)
     .single()
@@ -90,6 +91,12 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
   const imageFile = formData.get('image') as File | null
   let image_url: string | null = null
   if (imageFile && imageFile.size > 0) {
+    if (imageFile.size > MAX_IMAGE_SIZE) {
+      return { error: 'Image must be less than 50MB' }
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(imageFile.type)) {
+      return { error: 'Image must be a JPEG, PNG, or WebP file' }
+    }
     // Upload to Supabase storage
     const fileName = `${user.id}/${Date.now()}-${imageFile.name}`
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -198,6 +205,19 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   let image_url: string | null = existing.image_url
 
   if (imageFile && imageFile.size > 0) {
+    if (imageFile.size > MAX_IMAGE_SIZE) {
+      return { error: 'Image must be less than 50MB' }
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(imageFile.type)) {
+      return { error: 'Image must be a JPEG, PNG, or WebP file' }
+    }
+    // Delete old image from storage before uploading new one
+    if (existing.image_url) {
+      const oldUrlParts = existing.image_url.split('/event-images/')
+      if (oldUrlParts.length > 1) {
+        await supabase.storage.from('event-images').remove([oldUrlParts[1]])
+      }
+    }
     // Upload to Supabase storage
     const fileName = `${user.id}/${Date.now()}-${imageFile.name}`
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -216,6 +236,13 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
       image_url = publicUrl
     }
   } else if (removeImage) {
+    // Delete old image from storage
+    if (existing.image_url) {
+      const oldUrlParts = existing.image_url.split('/event-images/')
+      if (oldUrlParts.length > 1) {
+        await supabase.storage.from('event-images').remove([oldUrlParts[1]])
+      }
+    }
     image_url = null
   }
 

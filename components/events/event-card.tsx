@@ -78,7 +78,7 @@ export function EventCard({
           {/* Left side - Event info */}
           <div className="flex-1 min-w-0 flex flex-col">
             <span className="text-sm text-zinc-400">
-              {formatInTimeZone(new Date(event.start_time), TIMEZONE, "h:mm a")} EST
+              {formatInTimeZone(new Date(event.start_time), TIMEZONE, "h:mm a z")}
             </span>
 
             <h3 className="mt-1 font-semibold text-zinc-100 line-clamp-2 group-hover:text-red-400 transition-colors">

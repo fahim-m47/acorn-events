@@ -15,7 +15,7 @@ export async function getBlastsForEvent(eventId: string): Promise<BlastWithCreat
     .from('blasts')
     .select(`
       *,
-      creator:users(*)
+      creator:users(id, name, avatar_url, is_verified_host)
     `)
     .eq('event_id', eventId)
     .order('created_at', { ascending: false })

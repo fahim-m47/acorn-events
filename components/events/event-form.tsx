@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { addMinutes, format, parse } from "date-fns"
 import { formatInTimeZone } from "date-fns-tz"
-import { MAX_HOST_DISPLAY_NAME_LENGTH, TIMEZONE } from "@/lib/constants"
+import { MAX_HOST_DISPLAY_NAME_LENGTH, MAX_IMAGE_SIZE, TIMEZONE } from "@/lib/constants"
 import Image from "next/image"
 import { Loader2, Upload, X, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -125,9 +125,9 @@ export function EventForm({
       reader.readAsDataURL(file)
     }
     
-    // Validate file size (50MB)
-    if (file && file.size > 50 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, form: "Image size must be less than 50MB" }))
+    // Validate file size
+    if (file && file.size > MAX_IMAGE_SIZE) {
+      setErrors((prev) => ({ ...prev, form: "Image must be less than 50MB" }))
       setImagePreview(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
       return
@@ -237,7 +237,7 @@ export function EventForm({
               >
                 <Upload className="h-8 w-8 text-zinc-500 mb-2" />
                 <p className="text-sm text-zinc-500">Click to upload an image</p>
-                <p className="text-xs text-zinc-600 mt-1">PNG, JPG up to 50MB</p>
+                <p className="text-xs text-zinc-600 mt-1">JPEG, PNG, WebP up to 50MB</p>
               </div>
             )}
             <input
