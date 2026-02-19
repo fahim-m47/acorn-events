@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getEventPath } from '@/lib/event-url'
 import type { NotificationWithEvent } from '@/types'
 
 interface NotificationItemProps {
@@ -24,7 +25,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
     <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-lg">
       {/* Event title as link */}
       <Link
-        href={`/events/${notification.event.id}`}
+        href={getEventPath(notification.event)}
         className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
       >
         {notification.event.title}

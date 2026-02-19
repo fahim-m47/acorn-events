@@ -7,6 +7,7 @@ import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { EventImage } from "./event-image"
 import { VerifiedBadge } from "./verified-badge"
+import { getEventPath } from "@/lib/event-url"
 import type { EventWithCreator } from "@/types"
 
 interface PastEventCardProps {
@@ -42,7 +43,7 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
 
 export function PastEventCard({ event }: PastEventCardProps) {
   return (
-    <Link href={`/events/${event.id}`} className="block group w-full">
+    <Link href={getEventPath(event)} className="block group w-full">
       <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700 opacity-75">
         <div className="flex p-4 gap-4">
           {/* Left side - Event info */}

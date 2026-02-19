@@ -94,7 +94,7 @@ export const createEventSchema = z.object({
   capacity: optionalCapacityTransform,
   link: z
     .string()
-    .url('Invalid URL')
+    .url('Invalid RSVP URL')
     .optional()
     .or(z.literal(''))
     .transform((v) => v || null),

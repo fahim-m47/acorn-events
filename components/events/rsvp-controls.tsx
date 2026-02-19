@@ -22,6 +22,7 @@ import type { RegistrationStatus } from "@/types"
 
 interface RsvpControlsProps {
   eventId: string
+  eventPath: string
   isAuthenticated: boolean
   isFull: boolean
   userStatus: RegistrationStatus | null
@@ -30,6 +31,7 @@ interface RsvpControlsProps {
 
 export function RsvpControls({
   eventId,
+  eventPath,
   isAuthenticated,
   isFull,
   userStatus,
@@ -41,7 +43,7 @@ export function RsvpControls({
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
 
   const loginIntent = isFull ? "waitlist" : "rsvp"
-  const loginHref = buildLoginPath(`/events/${eventId}?intent=${loginIntent}`)
+  const loginHref = buildLoginPath(`${eventPath}?intent=${loginIntent}`)
 
   const handleJoin = () => {
     setError(null)

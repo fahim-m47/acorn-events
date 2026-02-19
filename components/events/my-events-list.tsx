@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EventImage } from "./event-image"
 import { BlastDialog } from "@/components/blasts"
+import { getEventEditPath, getEventPath } from "@/lib/event-url"
 import type { EventWithSaveCount } from "@/actions/events"
 
 interface MyEventsListProps {
@@ -32,11 +33,11 @@ export function MyEventsList({ events }: MyEventsListProps) {
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {events.map((event) => (
         <Card key={event.id} className="overflow-hidden bg-zinc-900 border-zinc-800">
-          <Link href={`/events/${event.id}`}>
+          <Link href={getEventPath(event)}>
             <EventImage imageUrl={event.image_url} alt={event.title} />
           </Link>
           <CardContent className="p-4">
-            <Link href={`/events/${event.id}`}>
+            <Link href={getEventPath(event)}>
               <h3 className="font-semibold text-lg text-zinc-100 line-clamp-1 hover:text-red-400 transition-colors">
                 {event.title}
               </h3>
@@ -52,7 +53,7 @@ export function MyEventsList({ events }: MyEventsListProps) {
 
             <div className="mt-4 flex gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href={`/events/${event.id}/edit`}>
+                <Link href={getEventEditPath(event)}>
                   <Pencil className="h-4 w-4 mr-1" />
                   Edit
                 </Link>

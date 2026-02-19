@@ -351,15 +351,15 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
             />
           </div>
 
-          {/* Event Link */}
+          {/* RSVP Link */}
           <div className="space-y-2">
-            <Label htmlFor="link">Event Link</Label>
+            <Label htmlFor="link">RSVP Link (e.g. Google Forms, Qualtrics)</Label>
             <Input
               id="link"
               name="link"
               type="url"
               defaultValue={initialData?.link || ""}
-              placeholder="https://..."
+              placeholder="https://forms.gle/..."
               className="bg-haver-dark-red/20 border-haver-dark-red/40 focus:border-haver-dark-red"
             />
           </div>

@@ -7,6 +7,7 @@ import { EventDetail } from '@/components/events/event-detail'
 import { RsvpAttendeesList } from '@/components/events/rsvp-attendees-list'
 import { BlastFeed, BlastDialog } from '@/components/blasts'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getEventIdFromParam, getEventPath, isCanonicalEventParam } from '@/lib/event-url'
 
 export default async function EventPage({
   params,
@@ -15,12 +16,16 @@ export default async function EventPage({
   params: Promise<{ id: string }>
   searchParams: Promise<{ intent?: string | string[] }>
 }) {
-  const { id } = await params
+  const { id: rawEventParam } = await params
   const { intent: rawIntent } = await searchParams
-  const event = await getEvent(id)
+  const eventId = getEventIdFromParam(rawEventParam)
+  if (!eventId) notFound()
+
+  const event = await getEvent(eventId)
 
   if (!event) notFound()
 
+  const canonicalEventPath = getEventPath(event)
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   const isOwner = user?.id === event.creator_id
@@ -28,23 +33,30 @@ export default async function EventPage({
 
   if (user && !isOwner && event.capacity !== null && (intent === 'rsvp' || intent === 'waitlist')) {
     const { error } = await supabase.rpc('join_event', {
-      p_event_id: id,
+      p_event_id: eventId,
     })
 
     if (error) {
       console.error('Auto-join after sign-in failed:', error)
     }
 
-    redirect(`/events/${id}`)
+    redirect(canonicalEventPath)
+  }
+
+  if (!isCanonicalEventParam(event, rawEventParam)) {
+    if (intent) {
+      redirect(`${canonicalEventPath}?intent=${encodeURIComponent(intent)}`)
+    }
+    redirect(canonicalEventPath)
   }
 
   const isAuthenticated = !!user
 
   const [favorited, blasts, capacitySnapshot, rsvpAttendees] = await Promise.all([
-    isAuthenticated ? isFavorited(id) : Promise.resolve(false),
-    getBlastsForEvent(id),
-    event.capacity !== null ? getEventCapacitySnapshot(id) : Promise.resolve(null),
-    isOwner && event.capacity !== null ? getRsvpAttendees(id) : Promise.resolve([]),
+    isAuthenticated ? isFavorited(eventId) : Promise.resolve(false),
+    getBlastsForEvent(eventId),
+    event.capacity !== null ? getEventCapacitySnapshot(eventId) : Promise.resolve(null),
+    isOwner && event.capacity !== null ? getRsvpAttendees(eventId) : Promise.resolve([]),
   ])
 
   return (
@@ -62,7 +74,7 @@ export default async function EventPage({
       <div className="max-w-3xl mx-auto mt-8">
         {isOwner && (
           <div className="mb-6">
-            <BlastDialog eventId={id} eventTitle={event.title} />
+            <BlastDialog eventId={eventId} eventTitle={event.title} />
           </div>
         )}
         {isOwner && capacitySnapshot && (
@@ -70,7 +82,7 @@ export default async function EventPage({
             <RsvpAttendeesList attendees={rsvpAttendees} />
           </div>
         )}
-        <BlastFeed blasts={blasts} eventId={id} isOwner={isOwner} />
+        <BlastFeed blasts={blasts} eventId={eventId} isOwner={isOwner} />
       </div>
     </div>
   )

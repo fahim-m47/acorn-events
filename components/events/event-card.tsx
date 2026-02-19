@@ -5,9 +5,12 @@ import { formatInTimeZone } from "date-fns-tz"
 import { TIMEZONE } from "@/lib/constants"
 import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { EventImage } from "./event-image"
 import { FavoriteButton } from "./favorite-button"
 import { VerifiedBadge } from "./verified-badge"
+import { ShareEventButton } from "./share-event-button"
+import { getEventPath } from "@/lib/event-url"
 import type { EventWithCreator, RegistrationStatus } from "@/types"
 
 interface EventCardProps {
@@ -52,15 +55,20 @@ export function EventCard({
   initialFavorited = false,
   registrationStatus = null,
 }: EventCardProps) {
+  const eventPath = getEventPath(event)
   const registrationLabel =
     registrationStatus === "going"
       ? "Going"
       : registrationStatus === "waitlist"
       ? "Waitlisted"
       : null
+  const handlePreventNavigation = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   return (
-    <Link href={`/events/${event.id}`} className="block group w-full">
+    <Link href={eventPath} className="block group w-full">
       <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700">
         <div className="flex p-4 gap-4">
           {/* Left side - Event info */}
@@ -92,6 +100,30 @@ export function EventCard({
                 <span className="line-clamp-2">{event.location}</span>
               </div>
             )}
+
+            <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
+              {event.link && (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-8 px-3"
+                  onClick={(e) => {
+                    handlePreventNavigation(e)
+                    window.open(event.link!, "_blank", "noopener,noreferrer")
+                  }}
+                >
+                  RSVP
+                </Button>
+              )}
+              <div onClick={handlePreventNavigation}>
+                <ShareEventButton
+                  eventId={event.id}
+                  eventTitle={event.title}
+                  size="sm"
+                  className="h-8 px-3"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Right side - Image with favorite button */}

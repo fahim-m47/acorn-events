@@ -7,6 +7,7 @@ import { subMonths, subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createEventSchema } from '@/lib/validations'
 import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS } from '@/lib/constants'
+import { getEventPath } from '@/lib/event-url'
 import type { EventWithCreator, EventInsert, EventUpdate } from '@/types'
 
 // Get upcoming events (next 14 days)
@@ -124,8 +125,12 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
     return { error: 'Failed to create event. Please try again.' }
   }
 
+  const createdEvent = data as { id: string; title: string }
+  const createdEventPath = getEventPath(createdEvent)
+
   revalidatePath('/')
-  redirect(`/events/${(data as { id: string }).id}`)
+  revalidatePath(createdEventPath)
+  redirect(createdEventPath)
 }
 
 // Update event (verify ownership)
@@ -234,9 +239,13 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
     return { error: 'Failed to update event. Please try again.' }
   }
 
+  const updatedEvent = data as { id: string; title: string }
+  const updatedEventPath = getEventPath(updatedEvent)
+
   revalidatePath('/')
   revalidatePath(`/events/${eventId}`)
-  redirect(`/events/${(data as { id: string }).id}`)
+  revalidatePath(updatedEventPath)
+  redirect(updatedEventPath)
 }
 
 // Delete event (verify ownership)

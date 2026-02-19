@@ -11,6 +11,8 @@ import { VerifiedBadge } from "./verified-badge"
 import { FavoriteButton } from "./favorite-button"
 import { DeleteEventButton } from "./delete-event-button"
 import { RsvpControls } from "./rsvp-controls"
+import { ShareEventButton } from "./share-event-button"
+import { getEventEditPath, getEventPath } from "@/lib/event-url"
 import type { EventWithCreator, EventCapacitySnapshot } from "@/types"
 
 interface EventDetailProps {
@@ -34,6 +36,8 @@ export function EventDetail({
   const isAuthenticated = !!currentUserId
   const startDate = new Date(event.start_time)
   const endDate = event.end_time ? new Date(event.end_time) : null
+  const eventPath = getEventPath(event)
+  const eventEditPath = getEventEditPath(event)
 
   const getInitials = (name: string | null) => {
     if (!name) return "?"
@@ -112,6 +116,7 @@ export function EventDetail({
               {!isCreator && (
                 <RsvpControls
                   eventId={event.id}
+                  eventPath={eventPath}
                   isAuthenticated={isAuthenticated}
                   isFull={capacitySnapshot.isFull}
                   userStatus={capacitySnapshot.userStatus}
@@ -147,21 +152,22 @@ export function EventDetail({
           </div>
         )}
 
-        {event.link && (
-          <div className="mt-6">
-            <Button asChild variant="outline" className="gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {event.link && (
+            <Button asChild className="gap-2">
               <a href={event.link} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                Event Link
+                RSVP
               </a>
             </Button>
-          </div>
-        )}
+          )}
+          <ShareEventButton eventId={event.id} eventTitle={event.title} />
+        </div>
 
         {isCreator && (
           <div className="mt-8 flex gap-3 pt-6 border-t border-zinc-800">
             <Button asChild variant="outline" className="gap-2">
-              <Link href={`/events/${event.id}/edit`}>
+              <Link href={eventEditPath}>
                 <Pencil className="h-4 w-4" />
                 Edit Event
               </Link>
