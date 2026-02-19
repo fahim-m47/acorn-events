@@ -50,7 +50,8 @@ export function EventDetail({
       <EventImage
         imageUrl={event.image_url}
         alt={event.title}
-        className="rounded-xl"
+        variant="poster"
+        className="mx-auto max-h-[80vh] rounded-xl"
         priority
       />
 

@@ -96,12 +96,12 @@ export function EventCard({
 
           {/* Right side - Image with favorite button */}
           <div className="relative shrink-0">
-            <div className="w-28 h-28">
+            <div className="w-28 md:w-32">
               <EventImage
                 imageUrl={event.image_url}
                 alt={event.title}
-                variant="square"
-                className="w-full h-full rounded-lg"
+                variant="poster"
+                className="w-full rounded-lg"
               />
             </div>
             {registrationLabel && (
