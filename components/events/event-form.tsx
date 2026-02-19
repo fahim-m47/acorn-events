@@ -1,14 +1,16 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import { addMinutes, format, parse } from "date-fns"
 import { formatInTimeZone } from "date-fns-tz"
 import { TIMEZONE } from "@/lib/constants"
 import Image from "next/image"
-import { Loader2, Upload, X, Clock, Calendar } from "lucide-react"
+import { Loader2, Upload, X, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { DateTimePicker } from "./date-time-picker"
 import type { Event } from "@/types"
 
 interface EventFormProps {
@@ -17,23 +19,95 @@ interface EventFormProps {
   submitLabel?: string
 }
 
+const DATETIME_LOCAL_FORMAT = "yyyy-MM-dd'T'HH:mm"
+
 export function EventForm({ initialData, action, submitLabel = "Create Event" }: EventFormProps) {
+  const formatDateTimeLocal = (dateStr: string | null | undefined) => {
+    if (!dateStr) return ""
+    // dateStr is UTC ISO string. We want to display it as New York time.
+    // formatInTimeZone takes the UTC date and formats it in the target timezone
+    return formatInTimeZone(dateStr, TIMEZONE, DATETIME_LOCAL_FORMAT)
+  }
+
+  const parseDateTimeLocal = (dateStr: string): Date | null => {
+    if (!dateStr) return null
+    const parsedDate = parse(dateStr, DATETIME_LOCAL_FORMAT, new Date())
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return null
+    }
+
+    return parsedDate
+  }
+
   const [isPending, setIsPending] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialData?.image_url || null
   )
+  const [startDateTimeValue, setStartDateTimeValue] = useState(
+    formatDateTimeLocal(initialData?.start_time)
+  )
+  const [endDateTimeValue, setEndDateTimeValue] = useState(
+    formatDateTimeLocal(initialData?.end_time)
+  )
   const [capacityType, setCapacityType] = useState<"unlimited" | "limited">(
     initialData?.capacity ? "limited" : "unlimited"
   )
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const timezoneOffset = formatInTimeZone(new Date(), TIMEZONE, "xxx")
+  const timezoneAbbreviation = formatInTimeZone(new Date(), TIMEZONE, "zzz")
+  const minimumStartDateTimeValue = formatInTimeZone(
+    new Date(),
+    TIMEZONE,
+    DATETIME_LOCAL_FORMAT
+  )
 
-  const formatDateTimeLocal = (dateStr: string | null | undefined) => {
-    if (!dateStr) return ""
-    // dateStr is UTC ISO string. We want to display it as New York time.
-    // formatInTimeZone takes the UTC date and formats it in the target timezone
-    return formatInTimeZone(dateStr, TIMEZONE, "yyyy-MM-dd'T'HH:mm")
+  const handleStartDateTimeChange = (nextValue: string) => {
+    setStartDateTimeValue(nextValue)
+    setErrors((prev) => {
+      if (!prev.end_time) return prev
+      const nextErrors = { ...prev }
+      delete nextErrors.end_time
+      return nextErrors
+    })
+
+    if (!nextValue || !endDateTimeValue) return
+
+    const nextStartDate = parseDateTimeLocal(nextValue)
+    const currentEndDate = parseDateTimeLocal(endDateTimeValue)
+
+    if (!nextStartDate || !currentEndDate) return
+
+    if (currentEndDate <= nextStartDate) {
+      const nextEndDate = addMinutes(nextStartDate, 30)
+      setEndDateTimeValue(format(nextEndDate, DATETIME_LOCAL_FORMAT))
+    }
   }
+
+  const handleEndDateTimeChange = (nextValue: string) => {
+    setEndDateTimeValue(nextValue)
+    setErrors((prev) => {
+      if (!prev.end_time) return prev
+      const nextErrors = { ...prev }
+      delete nextErrors.end_time
+      return nextErrors
+    })
+  }
+
+  useEffect(() => {
+    if (!startDateTimeValue || !endDateTimeValue) return
+
+    const parsedStartDate = parseDateTimeLocal(startDateTimeValue)
+    const parsedEndDate = parseDateTimeLocal(endDateTimeValue)
+
+    if (!parsedStartDate || !parsedEndDate) return
+
+    if (parsedEndDate <= parsedStartDate) {
+      const correctedEndDate = addMinutes(parsedStartDate, 30)
+      setEndDateTimeValue(format(correctedEndDate, DATETIME_LOCAL_FORMAT))
+    }
+  }, [startDateTimeValue, endDateTimeValue])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -77,6 +151,7 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
     const title = formData.get("title") as string
     const location = formData.get("location") as string
     const startTime = formData.get("start_time") as string
+    const endTime = formData.get("end_time") as string
 
     const newErrors: Record<string, string> = {}
 
@@ -90,6 +165,15 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
 
     if (!startTime) {
       newErrors.start_time = "Start time is required"
+    }
+
+    if (startTime && endTime) {
+      const startDate = parseDateTimeLocal(startTime)
+      const endDate = parseDateTimeLocal(endTime)
+
+      if (startDate && endDate && endDate <= startDate) {
+        newErrors.end_time = "End time must be later than start time"
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -183,51 +267,60 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
             )}
           </div>
 
-          {/* Time Selection - styled like reference */}
-          <div className="space-y-4">
-            {/* Start Time */}
-            <div className="space-y-2">
-              <Label htmlFor="start_time" className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                Start *
-              </Label>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Input
-                    id="start_time"
-                    name="start_time"
-                    type="datetime-local"
-                    defaultValue={formatDateTimeLocal(initialData?.start_time)}
-                    className="bg-haver-dark-red/20 border-haver-dark-red/40 focus:border-haver-dark-red"
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground px-2 py-1 rounded bg-haver-dark-red/20 border border-haver-dark-red/30">
-                  GMT-05:00 New York
+          {/* Time Selection */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm font-medium text-zinc-300">Date & Time</Label>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/70 bg-zinc-900/45 px-3 py-1 text-xs text-zinc-400">
+                <Globe className="h-3.5 w-3.5 text-zinc-500" />
+                <span className="whitespace-nowrap">
+                  New York ({timezoneAbbreviation}, GMT{timezoneOffset})
                 </span>
               </div>
-              {errors.start_time && (
-                <p className="text-sm text-red-400">{errors.start_time}</p>
-              )}
             </div>
 
-            {/* End Time */}
-            <div className="space-y-2">
-              <Label htmlFor="end_time" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                End
-              </Label>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Input
-                    id="end_time"
-                    name="end_time"
-                    type="datetime-local"
-                    defaultValue={formatDateTimeLocal(initialData?.end_time)}
-                    className="bg-haver-dark-red/20 border-haver-dark-red/40 focus:border-haver-dark-red"
-                  />
+            <div>
+              <div className="rounded-2xl border border-zinc-700/70 bg-zinc-900/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="space-y-3">
+                  <div className="grid gap-2 sm:grid-cols-[5.5rem_1fr] sm:items-center">
+                    <div className="flex items-center gap-2 text-zinc-200">
+                      <span className="h-2.5 w-2.5 rounded-full bg-zinc-400" />
+                      <span className="text-sm font-medium">Start *</span>
+                    </div>
+                    <DateTimePicker
+                      id="start_time"
+                      name="start_time"
+                      value={startDateTimeValue}
+                      onChange={handleStartDateTimeChange}
+                      minDateTimeValue={minimumStartDateTimeValue}
+                    />
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-[5.5rem_1fr] sm:items-center">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <span className="h-2.5 w-2.5 rounded-full border border-zinc-500" />
+                      <span className="text-sm font-medium">End</span>
+                    </div>
+                    <DateTimePicker
+                      id="end_time"
+                      name="end_time"
+                      value={endDateTimeValue}
+                      onChange={handleEndDateTimeChange}
+                      minDateTimeValue={startDateTimeValue || undefined}
+                      allowClear
+                      durationFromValue={startDateTimeValue}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+
+            {errors.start_time && (
+              <p className="text-sm text-red-400">{errors.start_time}</p>
+            )}
+            {errors.end_time && (
+              <p className="text-sm text-red-400">{errors.end_time}</p>
+            )}
           </div>
 
           {/* Location */}
