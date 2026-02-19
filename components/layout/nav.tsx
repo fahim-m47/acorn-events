@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useNotifications } from '@/contexts/notification-context'
 import { cn } from '@/lib/utils'
+import { SportsMenu } from './sports-menu'
 
 interface NavProps {
   mobile?: boolean
@@ -38,6 +39,7 @@ export function Nav({ mobile = false, onLinkClick }: NavProps) {
           : 'hidden md:flex md:flex-row md:items-center md:space-x-6'
       )}
     >
+      <SportsMenu mobile={mobile} onLinkClick={onLinkClick} />
       {links.map((link) => (
         <Link
           key={link.href}

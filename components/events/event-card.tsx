@@ -90,9 +90,7 @@ export function EventCard({
                 <span className="shrink-0">By</span>
                 <span className="flex flex-col leading-tight">
                   <span>{formattedHostName.firstName}</span>
-                  {formattedHostName.lastName && (
-                    <span className="pl-2">{formattedHostName.lastName}</span>
-                  )}
+                  {formattedHostName.lastName && <span>{formattedHostName.lastName}</span>}
                 </span>
                 {showVerifiedBadge && <VerifiedBadge className="shrink-0 mt-0.5" />}
               </span>
