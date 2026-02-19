@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { addMinutes, format, parse } from "date-fns"
 import { formatInTimeZone } from "date-fns-tz"
-import { TIMEZONE } from "@/lib/constants"
+import { MAX_HOST_DISPLAY_NAME_LENGTH, TIMEZONE } from "@/lib/constants"
 import Image from "next/image"
 import { Loader2, Upload, X, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,11 +17,17 @@ interface EventFormProps {
   initialData?: Partial<Event> & { capacity?: number | null }
   action: (formData: FormData) => Promise<{ error?: string } | void>
   submitLabel?: string
+  allowHostNameOverride?: boolean
 }
 
 const DATETIME_LOCAL_FORMAT = "yyyy-MM-dd'T'HH:mm"
 
-export function EventForm({ initialData, action, submitLabel = "Create Event" }: EventFormProps) {
+export function EventForm({
+  initialData,
+  action,
+  submitLabel = "Create Event",
+  allowHostNameOverride = false,
+}: EventFormProps) {
   const formatDateTimeLocal = (dateStr: string | null | undefined) => {
     if (!dateStr) return ""
     // dateStr is UTC ISO string. We want to display it as New York time.
@@ -266,6 +272,23 @@ export function EventForm({ initialData, action, submitLabel = "Create Event" }:
               <p className="text-sm text-red-400">{errors.title}</p>
             )}
           </div>
+
+          {allowHostNameOverride && (
+            <div className="space-y-2">
+              <Label htmlFor="host_display_name">Display Host Name (optional)</Label>
+              <Input
+                id="host_display_name"
+                name="host_display_name"
+                defaultValue={initialData?.host_display_name || ""}
+                placeholder="e.g. Chess Club"
+                maxLength={MAX_HOST_DISPLAY_NAME_LENGTH}
+                className="bg-haver-dark-red/20 border-haver-dark-red/40 focus:border-haver-dark-red"
+              />
+              <p className="text-xs text-zinc-500">
+                Only shown on this event. Leave blank to use your account name.
+              </p>
+            </div>
+          )}
 
           {/* Time Selection */}
           <div className="space-y-3">

@@ -11,6 +11,7 @@ import { FavoriteButton } from "./favorite-button"
 import { VerifiedBadge } from "./verified-badge"
 import { ShareEventButton } from "./share-event-button"
 import { getEventPath } from "@/lib/event-url"
+import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
 import type { EventWithCreator, RegistrationStatus } from "@/types"
 
 interface EventCardProps {
@@ -56,6 +57,9 @@ export function EventCard({
   registrationStatus = null,
 }: EventCardProps) {
   const eventPath = getEventPath(event)
+  const hostDisplayName = getEventHostDisplayName(event)
+  const formattedHostName = formatHostName(hostDisplayName)
+  const showVerifiedBadge = event.creator?.is_verified_host && !hasHostDisplayNameOverride(event)
   const registrationLabel =
     registrationStatus === "going"
       ? "Going"
@@ -85,12 +89,12 @@ export function EventCard({
               <span className="flex items-start gap-1">
                 <span className="shrink-0">By</span>
                 <span className="flex flex-col leading-tight">
-                  <span>{formatHostName(event.creator?.name).firstName}</span>
-                  {formatHostName(event.creator?.name).lastName && (
-                    <span className="pl-2">{formatHostName(event.creator?.name).lastName}</span>
+                  <span>{formattedHostName.firstName}</span>
+                  {formattedHostName.lastName && (
+                    <span className="pl-2">{formattedHostName.lastName}</span>
                   )}
                 </span>
-                {event.creator?.is_verified_host && <VerifiedBadge className="shrink-0 mt-0.5" />}
+                {showVerifiedBadge && <VerifiedBadge className="shrink-0 mt-0.5" />}
               </span>
             </div>
 
@@ -102,6 +106,14 @@ export function EventCard({
             )}
 
             <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
+              <div onClick={handlePreventNavigation}>
+                <ShareEventButton
+                  eventId={event.id}
+                  eventTitle={event.title}
+                  size="sm"
+                  className="h-8 px-3"
+                />
+              </div>
               {event.link && (
                 <Button
                   type="button"
@@ -115,14 +127,6 @@ export function EventCard({
                   RSVP
                 </Button>
               )}
-              <div onClick={handlePreventNavigation}>
-                <ShareEventButton
-                  eventId={event.id}
-                  eventTitle={event.title}
-                  size="sm"
-                  className="h-8 px-3"
-                />
-              </div>
             </div>
           </div>
 

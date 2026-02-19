@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { EventForm } from '@/components/events/event-form'
 import { getEvent, updateEvent } from '@/actions/events'
+import { canUserOverrideEventHost } from '@/lib/host-override-access'
 import {
   getEventEditPath,
   getEventIdFromParam,
@@ -24,6 +25,7 @@ export default async function EditEventPage({
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+  const canOverrideHostDisplayName = canUserOverrideEventHost(user)
 
   const event = await getEvent(eventId)
 
@@ -48,6 +50,7 @@ export default async function EditEventPage({
         initialData={event}
         action={updateEventWithId}
         submitLabel="Update Event"
+        allowHostNameOverride={canOverrideHostDisplayName}
       />
     </div>
   )

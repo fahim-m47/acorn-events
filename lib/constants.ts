@@ -2,6 +2,7 @@ export const HAVERFORD_DOMAIN = "@haverford.edu";
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_DESCRIPTION_LENGTH = 2000;
 export const MAX_LOCATION_LENGTH = 200;
+export const MAX_HOST_DISPLAY_NAME_LENGTH = 100;
 export const MAX_BLAST_LENGTH = 500;
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];

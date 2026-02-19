@@ -34,6 +34,7 @@ export type Database = {
           creator_id: string
           title: string
           description: string | null
+          host_display_name: string | null
           location: string
           start_time: string
           end_time: string | null
@@ -48,6 +49,7 @@ export type Database = {
           creator_id: string
           title: string
           description?: string | null
+          host_display_name?: string | null
           location: string
           start_time: string
           end_time?: string | null
@@ -62,6 +64,7 @@ export type Database = {
           creator_id?: string
           title?: string
           description?: string | null
+          host_display_name?: string | null
           location?: string
           start_time?: string
           end_time?: string | null

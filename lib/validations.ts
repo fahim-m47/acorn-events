@@ -5,6 +5,7 @@ import {
   MAX_TITLE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_LOCATION_LENGTH,
+  MAX_HOST_DISPLAY_NAME_LENGTH,
   MAX_BLAST_LENGTH,
   MAX_EVENT_MONTHS_AHEAD,
   TIMEZONE,
@@ -85,10 +86,19 @@ const optionalCapacityTransform = z
     return parsed
   })
 
+const optionalHostDisplayNameTransform = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((val) => (typeof val === 'string' ? val.trim() : ''))
+  .refine((val) => val.length <= MAX_HOST_DISPLAY_NAME_LENGTH, {
+    message: `Host name must be ${MAX_HOST_DISPLAY_NAME_LENGTH} characters or less`,
+  })
+  .transform((val) => val || null)
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(MAX_TITLE_LENGTH),
   description: z.string().max(MAX_DESCRIPTION_LENGTH).optional(),
   location: z.string().min(1, 'Location is required').max(MAX_LOCATION_LENGTH),
+  host_display_name: optionalHostDisplayNameTransform,
   start_time: datetimeTransform,
   end_time: optionalDatetimeTransform,
   capacity: optionalCapacityTransform,

@@ -8,6 +8,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createEventSchema } from '@/lib/validations'
 import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS } from '@/lib/constants'
 import { getEventPath } from '@/lib/event-url'
+import { canUserOverrideEventHost } from '@/lib/host-override-access'
 import type { EventWithCreator, EventInsert, EventUpdate } from '@/types'
 
 // Get upcoming events (next 14 days)
@@ -60,11 +61,13 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  const canOverrideHostDisplayName = canUserOverrideEventHost(user)
 
   // Parse and validate
   const raw = {
     title: formData.get('title'),
     description: formData.get('description'),
+    host_display_name: canOverrideHostDisplayName ? formData.get('host_display_name') : undefined,
     location: formData.get('location'),
     start_time: formData.get('start_time'),
     end_time: formData.get('end_time'),
@@ -106,6 +109,7 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
     creator_id: user.id,
     title: validated.title,
     description: validated.description,
+    host_display_name: canOverrideHostDisplayName ? validated.host_display_name : null,
     location: validated.location,
     start_time: validated.start_time,
     end_time: validated.end_time,
@@ -142,6 +146,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  const canOverrideHostDisplayName = canUserOverrideEventHost(user)
 
   // Verify ownership
   const { data: existingEvent, error: fetchError } = await supabase
@@ -167,6 +172,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   const raw = {
     title: formData.get('title'),
     description: formData.get('description'),
+    host_display_name: canOverrideHostDisplayName ? formData.get('host_display_name') : undefined,
     location: formData.get('location'),
     start_time: formData.get('start_time'),
     end_time: formData.get('end_time'),
@@ -186,10 +192,9 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   }
 
   // Handle image upload if provided
-  // Handle image upload if provided
   const imageFile = formData.get('image') as File | null
   const removeImage = formData.get('remove_image') === 'true'
-  
+
   let image_url: string | null = existing.image_url
 
   if (imageFile && imageFile.size > 0) {
@@ -225,6 +230,9 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
     link: validated.link,
     image_url,
     updated_at: new Date().toISOString(),
+  }
+  if (canOverrideHostDisplayName) {
+    updateData.host_display_name = validated.host_display_name
   }
 
   const { data, error } = await supabase

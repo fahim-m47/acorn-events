@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { EventImage } from "./event-image"
 import { VerifiedBadge } from "./verified-badge"
 import { getEventPath } from "@/lib/event-url"
+import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
 import type { EventWithCreator } from "@/types"
 
 interface PastEventCardProps {
@@ -42,6 +43,10 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
 }
 
 export function PastEventCard({ event }: PastEventCardProps) {
+  const hostDisplayName = getEventHostDisplayName(event)
+  const formattedHostName = formatHostName(hostDisplayName)
+  const showVerifiedBadge = event.creator?.is_verified_host && !hasHostDisplayNameOverride(event)
+
   return (
     <Link href={getEventPath(event)} className="block group w-full">
       <Card className="overflow-hidden bg-zinc-900 border-zinc-800 transition-colors hover:border-zinc-700 opacity-75">
@@ -60,12 +65,12 @@ export function PastEventCard({ event }: PastEventCardProps) {
               <span className="flex items-start gap-1">
                 <span className="shrink-0">By</span>
                 <span className="flex flex-col leading-tight">
-                  <span>{formatHostName(event.creator?.name).firstName}</span>
-                  {formatHostName(event.creator?.name).lastName && (
-                    <span className="pl-2">{formatHostName(event.creator?.name).lastName}</span>
+                  <span>{formattedHostName.firstName}</span>
+                  {formattedHostName.lastName && (
+                    <span className="pl-2">{formattedHostName.lastName}</span>
                   )}
                 </span>
-                {event.creator?.is_verified_host && <VerifiedBadge className="shrink-0 mt-0.5" />}
+                {showVerifiedBadge && <VerifiedBadge className="shrink-0 mt-0.5" />}
               </span>
             </div>
 

@@ -13,6 +13,7 @@ import { DeleteEventButton } from "./delete-event-button"
 import { RsvpControls } from "./rsvp-controls"
 import { ShareEventButton } from "./share-event-button"
 import { getEventEditPath, getEventPath } from "@/lib/event-url"
+import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
 import type { EventWithCreator, EventCapacitySnapshot } from "@/types"
 
 interface EventDetailProps {
@@ -38,6 +39,9 @@ export function EventDetail({
   const endDate = event.end_time ? new Date(event.end_time) : null
   const eventPath = getEventPath(event)
   const eventEditPath = getEventEditPath(event)
+  const hostDisplayName = getEventHostDisplayName(event)
+  const hasHostNameOverride = hasHostDisplayNameOverride(event)
+  const showVerifiedBadge = event.creator?.is_verified_host && !hasHostNameOverride
 
   const getInitials = (name: string | null) => {
     if (!name) return "?"
@@ -129,17 +133,17 @@ export function EventDetail({
 
         <div className="mt-6 flex items-center gap-3 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
           <Avatar>
-            <AvatarImage src={event.creator?.avatar_url || undefined} />
+            <AvatarImage src={hasHostNameOverride ? undefined : event.creator?.avatar_url || undefined} />
             <AvatarFallback className="bg-zinc-800 text-zinc-300">
-              {getInitials(event.creator?.name)}
+              {getInitials(hostDisplayName)}
             </AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-zinc-200">
-                {event.creator?.name || "Unknown host"}
+                {hostDisplayName}
               </span>
-              {event.creator?.is_verified_host && <VerifiedBadge />}
+              {showVerifiedBadge && <VerifiedBadge />}
             </div>
             <span className="text-sm text-zinc-500">Event host</span>
           </div>
@@ -153,6 +157,7 @@ export function EventDetail({
         )}
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
+          <ShareEventButton eventId={event.id} eventTitle={event.title} />
           {event.link && (
             <Button asChild className="gap-2">
               <a href={event.link} target="_blank" rel="noopener noreferrer">
@@ -161,7 +166,6 @@ export function EventDetail({
               </a>
             </Button>
           )}
-          <ShareEventButton eventId={event.id} eventTitle={event.title} />
         </div>
 
         {isCreator && (
