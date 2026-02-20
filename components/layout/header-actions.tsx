@@ -36,13 +36,22 @@ export function HeaderActions() {
           </Link>
         </Button>
       ) : (
-        <Button
-          onClick={() => signIn(CREATE_EVENT_PATH)}
-          className={createEventButtonClasses}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Create Event</span>
-        </Button>
+        <>
+          <Button
+            onClick={() => signIn(CREATE_EVENT_PATH)}
+            className={createEventButtonClasses}
+          >
+            <Plus className="h-5 w-5" />
+            <span>Create Event</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => signIn('/')}
+            className="border-white/35 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          >
+            Sign In
+          </Button>
+        </>
       )}
 
       {user && (

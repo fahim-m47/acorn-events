@@ -22,37 +22,6 @@ interface EventCardProps {
   showQuickDelete?: boolean
 }
 
-// Format host name for display: two lines if needed, truncate/initial for long names
-const formatHostName = (name: string | null | undefined): { firstName: string; lastName?: string } => {
-  if (!name) return { firstName: "Unknown host" }
-
-  const parts = name.trim().split(/\s+/)
-  if (parts.length === 1) {
-    // Single name - truncate if too long
-    const firstName = parts[0]
-    if (firstName.length > 10) {
-      return { firstName: firstName.slice(0, 7) + "..." }
-    }
-    return { firstName }
-  }
-
-  // Multiple parts - first name + last name handling
-  const firstName = parts[0]
-  const lastName = parts.slice(1).join(" ")
-
-  // If first name is too long, truncate and skip last name
-  if (firstName.length > 10) {
-    return { firstName: firstName.slice(0, 7) + "..." }
-  }
-
-  // If last name is too long, use initial
-  if (lastName.length > 8) {
-    return { firstName, lastName: lastName[0].toUpperCase() + "." }
-  }
-
-  return { firstName, lastName }
-}
-
 export function EventCard({
   event,
   initialFavorited = false,
@@ -61,7 +30,6 @@ export function EventCard({
 }: EventCardProps) {
   const eventPath = getEventPath(event)
   const hostDisplayName = getEventHostDisplayName(event)
-  const formattedHostName = formatHostName(hostDisplayName)
   const showVerifiedBadge = event.creator?.is_verified_host && !hasHostDisplayNameOverride(event)
   const registrationLabel =
     registrationStatus === "going"
@@ -89,11 +57,12 @@ export function EventCard({
             </h3>
 
             <div className="mt-1 text-sm text-zinc-500">
-              <span className="flex items-start gap-1">
+              <span className="flex min-w-0 items-start gap-1">
                 <span className="shrink-0">By</span>
-                <span className="flex flex-col leading-tight">
-                  <span>{formattedHostName.firstName}</span>
-                  {formattedHostName.lastName && <span>{formattedHostName.lastName}</span>}
+                <span className="min-w-0 flex-1 leading-tight">
+                  <span className="block line-clamp-2 break-words">
+                    {hostDisplayName}
+                  </span>
                 </span>
                 {showVerifiedBadge && <VerifiedBadge className="shrink-0 mt-0.5" />}
               </span>
