@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getEvent } from '@/actions/events'
 import { getBlastsForEvent } from '@/actions/blasts'
 import { isFavorited } from '@/actions/favorites'
-import { getEventCapacitySnapshot, getRsvpAttendees } from '@/actions/rsvps'
+import { getEventCapacitySnapshot, getPublicEventCapacitySnapshot, getRsvpAttendees } from '@/actions/rsvps'
 import { EventDetail } from '@/components/events/event-detail'
 import { RsvpAttendeesList } from '@/components/events/rsvp-attendees-list'
 import { BlastFeed, BlastDialog } from '@/components/blasts'
@@ -28,7 +28,8 @@ export default async function EventPage({
 
   const canonicalEventPath = getEventPath(event)
   const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user ?? null
   const isOwner = user?.id === event.creator_id
   const canDeleteAnyEvent = canUserOverrideEventHost(user)
   const intent = Array.isArray(rawIntent) ? rawIntent[0] : rawIntent
@@ -55,9 +56,13 @@ export default async function EventPage({
   const isAuthenticated = !!user
 
   const [favorited, blasts, capacitySnapshot, rsvpAttendees] = await Promise.all([
-    isAuthenticated ? isFavorited(eventId) : Promise.resolve(false),
+    isAuthenticated ? isFavorited(eventId, user.id) : Promise.resolve(false),
     getBlastsForEvent(eventId),
-    event.capacity !== null ? getEventCapacitySnapshot(eventId) : Promise.resolve(null),
+    event.capacity !== null
+      ? (isAuthenticated
+        ? getEventCapacitySnapshot(eventId)
+        : getPublicEventCapacitySnapshot(eventId))
+      : Promise.resolve(null),
     isOwner && event.capacity !== null ? getRsvpAttendees(eventId) : Promise.resolve([]),
   ])
 

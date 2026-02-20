@@ -19,6 +19,7 @@ function LoginPageContent() {
   }, [searchParams])
 
   const handleGoogleSignIn = async () => {
+    if (isLoading) return
     setIsLoading(true)
     setError(null)
 

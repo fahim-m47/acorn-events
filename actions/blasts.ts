@@ -1,27 +1,42 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createPublicServerSupabaseClient } from '@/lib/supabase/public-server'
 import { createBlastSchema } from '@/lib/validations'
 import type { BlastWithCreator, BlastInsert } from '@/types'
 
+const BLASTS_CACHE_TAG = 'blasts'
+const BLASTS_CACHE_TTL_SECONDS = 30
+
+const getBlastsForEventCached = unstable_cache(
+  async (eventId: string): Promise<BlastWithCreator[]> => {
+    const supabase = createPublicServerSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('blasts')
+      .select(`
+        *,
+        creator:users(id, name, avatar_url, is_verified_host)
+      `)
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data as unknown as BlastWithCreator[]
+  },
+  ['blasts:by-event:v1'],
+  {
+    revalidate: BLASTS_CACHE_TTL_SECONDS,
+    tags: [BLASTS_CACHE_TAG],
+  }
+)
+
 // Get all blasts for an event with creator info
 export async function getBlastsForEvent(eventId: string): Promise<BlastWithCreator[]> {
-  const supabase = await createServerSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('blasts')
-    .select(`
-      *,
-      creator:users(id, name, avatar_url, is_verified_host)
-    `)
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data as unknown as BlastWithCreator[]
+  return getBlastsForEventCached(eventId)
 }
 
 // Create a new blast (only event creator can create)
@@ -91,6 +106,7 @@ export async function createBlast(formData: FormData): Promise<{ error?: string 
 
   revalidatePath(`/events/${validated.event_id}`)
   revalidatePath('/notifications')
+  revalidateTag(BLASTS_CACHE_TAG)
 }
 
 // Delete a blast (only blast creator can delete)
@@ -136,4 +152,5 @@ export async function deleteBlast(blastId: string): Promise<{ error?: string } |
 
   revalidatePath(`/events/${blastData.event_id}`)
   revalidatePath('/notifications')
+  revalidateTag(BLASTS_CACHE_TAG)
 }

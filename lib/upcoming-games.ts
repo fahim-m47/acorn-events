@@ -1,13 +1,12 @@
+import 'server-only'
+import { unstable_cache } from 'next/cache'
 import { formatInTimeZone } from 'date-fns-tz'
 import { TIMEZONE } from '@/lib/constants'
 import { SPORTS_CATEGORIES } from '@/lib/sports-links'
 import { getSchedule } from '@/lib/sports-scraper'
 import type { UpcomingGame } from '@/types/sports'
 
-const UPCOMING_GAMES_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
-
-let cachedUpcomingGames: UpcomingGame[] | null = null
-let cachedAt = 0
+const UPCOMING_GAMES_CACHE_TTL_SECONDS = 10 * 60
 
 function parseTimeMinutes(time: string): number {
   const match = time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
@@ -66,17 +65,16 @@ async function fetchUpcomingGames(): Promise<UpcomingGame[]> {
   return upcomingGames
 }
 
-export async function getUpcomingGames(limit = 10): Promise<UpcomingGame[]> {
-  if (
-    cachedUpcomingGames !== null &&
-    Date.now() - cachedAt < UPCOMING_GAMES_CACHE_TTL
-  ) {
-    return cachedUpcomingGames.slice(0, limit)
+const getUpcomingGamesCached = unstable_cache(
+  async (): Promise<UpcomingGame[]> => fetchUpcomingGames(),
+  ['sports:upcoming-games:v1'],
+  {
+    revalidate: UPCOMING_GAMES_CACHE_TTL_SECONDS,
+    tags: ['sports-upcoming-games'],
   }
+)
 
-  const fetchedGames = await fetchUpcomingGames()
-  cachedUpcomingGames = fetchedGames
-  cachedAt = Date.now()
-
-  return fetchedGames.slice(0, limit)
+export async function getUpcomingGames(limit = 10): Promise<UpcomingGame[]> {
+  const games = await getUpcomingGamesCached()
+  return games.slice(0, limit)
 }

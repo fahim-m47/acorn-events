@@ -14,6 +14,7 @@ import { RsvpControls } from "./rsvp-controls"
 import { ShareEventButton } from "./share-event-button"
 import { getEventEditPath, getEventPath } from "@/lib/event-url"
 import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
+import { buildLoginPath } from "@/lib/auth-redirect"
 import type { EventWithCreator, EventCapacitySnapshot } from "@/types"
 
 interface EventDetailProps {
@@ -45,6 +46,8 @@ export function EventDetail({
   const hostDisplayName = getEventHostDisplayName(event)
   const hasHostNameOverride = hasHostDisplayNameOverride(event)
   const showVerifiedBadge = event.creator?.is_verified_host && !hasHostNameOverride
+  const hasCapacity = event.capacity !== null
+  const fallbackRsvpHref = buildLoginPath(`${eventPath}?intent=rsvp`)
 
   const getInitials = (name: string | null) => {
     if (!name) return "?"
@@ -130,6 +133,18 @@ export function EventDetail({
                   waitlistPosition={capacitySnapshot.waitlistPosition}
                 />
               )}
+            </div>
+          </div>
+        )}
+        {!capacitySnapshot && hasCapacity && !isCreator && !isAuthenticated && (
+          <div className="mt-6 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-zinc-300">
+                RSVP is available for this event.
+              </p>
+              <Button asChild>
+                <Link href={fallbackRsvpHref}>RSVP</Link>
+              </Button>
             </div>
           </div>
         )}

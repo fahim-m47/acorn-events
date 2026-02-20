@@ -1,57 +1,108 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { addDays, subMonths, subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/admin'
+import { createPublicServerSupabaseClient } from '@/lib/supabase/public-server'
 import { createEventSchema } from '@/lib/validations'
 import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS, MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES } from '@/lib/constants'
 import { getEventPath } from '@/lib/event-url'
 import { canUserOverrideEventHost } from '@/lib/host-override-access'
 import type { EventWithCreator, EventInsert, EventUpdate } from '@/types'
 
+const EVENTS_CACHE_TAG = 'events'
+const EVENTS_CACHE_TTL_SECONDS = 60
+
+const getEventsCached = unstable_cache(
+  async (): Promise<EventWithCreator[]> => {
+    const supabase = createPublicServerSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        creator:users(id, name, avatar_url, is_verified_host)
+      `)
+      .gte('start_time', new Date().toISOString())
+      .lte('start_time', addDays(new Date(), EVENT_WINDOW_DAYS).toISOString())
+      .order('start_time', { ascending: true })
+
+    if (error) throw error
+    return data as unknown as EventWithCreator[]
+  },
+  ['events:upcoming:v1'],
+  {
+    revalidate: EVENTS_CACHE_TTL_SECONDS,
+    tags: [EVENTS_CACHE_TAG],
+  }
+)
+
+const getEventCached = unstable_cache(
+  async (id: string): Promise<EventWithCreator | null> => {
+    const supabase = createPublicServerSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        creator:users(id, name, avatar_url, is_verified_host)
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null
+      }
+      throw error
+    }
+
+    return data as unknown as EventWithCreator
+  },
+  ['events:by-id:v1'],
+  {
+    revalidate: EVENTS_CACHE_TTL_SECONDS,
+    tags: [EVENTS_CACHE_TAG],
+  }
+)
+
+const getPastEventsCached = unstable_cache(
+  async (): Promise<EventWithCreator[]> => {
+    const supabase = createPublicServerSupabaseClient()
+    const now = new Date()
+    const cutoffDate = subDays(now, EVENT_WINDOW_DAYS)
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        creator:users(*)
+      `)
+      .lt('start_time', now.toISOString())
+      .gte('start_time', cutoffDate.toISOString())
+      .order('start_time', { ascending: false })
+
+    if (error) throw error
+    return data as unknown as EventWithCreator[]
+  },
+  ['events:past:v1'],
+  {
+    revalidate: EVENTS_CACHE_TTL_SECONDS,
+    tags: [EVENTS_CACHE_TAG],
+  }
+)
+
 // Get upcoming events (next 30 days)
 export async function getEvents(): Promise<EventWithCreator[]> {
-  const supabase = await createServerSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('events')
-    .select(`
-      *,
-      creator:users(id, name, avatar_url, is_verified_host)
-    `)
-    .gte('start_time', new Date().toISOString())
-    .lte('start_time', addDays(new Date(), EVENT_WINDOW_DAYS).toISOString())
-    .order('start_time', { ascending: true })
-
-  if (error) throw error
-  return data as unknown as EventWithCreator[]
+  return getEventsCached()
 }
 
 // Get single event with creator
 export async function getEvent(id: string): Promise<EventWithCreator | null> {
-  const supabase = await createServerSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('events')
-    .select(`
-      *,
-      creator:users(id, name, avatar_url, is_verified_host)
-    `)
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // No rows returned
-      return null
-    }
-    throw error
-  }
-
-  return data as unknown as EventWithCreator
+  return getEventCached(id)
 }
 
 // Create new event
@@ -142,6 +193,7 @@ export async function createEvent(formData: FormData): Promise<{ error?: string 
 
   revalidatePath('/')
   revalidatePath(createdEventPath)
+  revalidateTag(EVENTS_CACHE_TAG)
   redirect(createdEventPath)
 }
 
@@ -281,6 +333,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   revalidatePath('/')
   revalidatePath(`/events/${eventId}`)
   revalidatePath(updatedEventPath)
+  revalidateTag(EVENTS_CACHE_TAG)
   redirect(updatedEventPath)
 }
 
@@ -340,6 +393,7 @@ export async function deleteEvent(eventId: string): Promise<{ success?: boolean;
   revalidatePath('/my-events')
   revalidatePath('/past-events')
   revalidatePath(`/events/${eventId}`)
+  revalidateTag(EVENTS_CACHE_TAG)
   return { success: true }
 }
 
@@ -384,21 +438,5 @@ export async function getMyEvents(): Promise<EventWithSaveCount[]> {
 
 // Get past events (last 14 days)
 export async function getPastEvents(): Promise<EventWithCreator[]> {
-  const supabase = await createServerSupabaseClient()
-
-  const now = new Date()
-  const cutoffDate = subDays(now, EVENT_WINDOW_DAYS)
-
-  const { data, error } = await supabase
-    .from('events')
-    .select(`
-      *,
-      creator:users(*)
-    `)
-    .lt('start_time', now.toISOString())
-    .gte('start_time', cutoffDate.toISOString())
-    .order('start_time', { ascending: false })
-
-  if (error) throw error
-  return data as unknown as EventWithCreator[]
+  return getPastEventsCached()
 }

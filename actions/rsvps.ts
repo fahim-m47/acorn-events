@@ -1,8 +1,53 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createPublicServerSupabaseClient } from '@/lib/supabase/public-server'
 import type { EventCapacitySnapshot, RegistrationStatus, RsvpAttendee } from '@/types'
+
+const EVENT_CAPACITY_CACHE_TAG = 'event-capacity'
+const EVENT_CAPACITY_CACHE_TTL_SECONDS = 5
+
+const getPublicEventCapacitySnapshotCached = unstable_cache(
+  async (eventId: string): Promise<EventCapacitySnapshot | null> => {
+    const supabase = createPublicServerSupabaseClient()
+
+    const { data, error } = await supabase.rpc('get_event_capacity_snapshot', {
+      p_event_id: eventId,
+    })
+
+    if (error) {
+      console.error('Failed to load public event capacity snapshot:', error)
+      return null
+    }
+
+    const snapshot = data?.[0]
+    if (!snapshot) {
+      return null
+    }
+
+    return {
+      capacity: snapshot.capacity,
+      seatsRemaining: snapshot.seats_remaining,
+      goingCount: snapshot.going_count,
+      waitlistCount: snapshot.waitlist_count,
+      isFull: snapshot.is_full,
+      userStatus: null,
+      waitlistPosition: null,
+    }
+  },
+  ['rsvp:public-capacity:v1'],
+  {
+    revalidate: EVENT_CAPACITY_CACHE_TTL_SECONDS,
+    tags: [EVENT_CAPACITY_CACHE_TAG],
+  }
+)
+
+export async function getPublicEventCapacitySnapshot(
+  eventId: string
+): Promise<EventCapacitySnapshot | null> {
+  return getPublicEventCapacitySnapshotCached(eventId)
+}
 
 export async function getEventCapacitySnapshot(
   eventId: string
@@ -104,6 +149,7 @@ export async function joinEvent(eventId: string): Promise<{ status: Registration
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath('/saved')
+  revalidateTag(EVENT_CAPACITY_CACHE_TAG)
 
   return { status }
 }
@@ -130,6 +176,7 @@ export async function leaveEvent(eventId: string): Promise<{ success: boolean; e
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath('/saved')
+  revalidateTag(EVENT_CAPACITY_CACHE_TAG)
 
   return { success: true }
 }

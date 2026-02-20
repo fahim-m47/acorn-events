@@ -7,10 +7,11 @@ export const dynamic = 'force-dynamic'
 
 export default async function PastEventsPage() {
   const supabase = await createServerSupabaseClient()
-  const [{ data: { user } }, events] = await Promise.all([
-    supabase.auth.getUser(),
+  const [{ data: { session } }, events] = await Promise.all([
+    supabase.auth.getSession(),
     getPastEvents(),
   ])
+  const user = session?.user ?? null
   const canDeleteAnyEvent = canUserOverrideEventHost(user)
 
   return (

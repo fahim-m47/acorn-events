@@ -132,18 +132,25 @@ export async function toggleFavorite(
 }
 
 // Check if event is favorited (for initial state)
-export async function isFavorited(eventId: string): Promise<boolean> {
+export async function isFavorited(
+  eventId: string,
+  userId?: string | null
+): Promise<boolean> {
   const supabase = await createServerSupabaseClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return false
+  let resolvedUserId = userId ?? null
+  if (!resolvedUserId) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    resolvedUserId = session?.user?.id ?? null
+  }
+  if (!resolvedUserId) return false
 
   const { data } = await supabase
     .from('favorites')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', resolvedUserId)
     .eq('event_id', eventId)
     .single()
 
@@ -151,18 +158,22 @@ export async function isFavorited(eventId: string): Promise<boolean> {
 }
 
 // Get IDs of events the current user has favorited
-export async function getFavoritedEventIds(): Promise<string[]> {
+export async function getFavoritedEventIds(userId?: string | null): Promise<string[]> {
   const supabase = await createServerSupabaseClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return []
+  let resolvedUserId = userId ?? null
+  if (!resolvedUserId) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    resolvedUserId = session?.user?.id ?? null
+  }
+  if (!resolvedUserId) return []
 
   const { data } = await supabase
     .from('favorites')
     .select('event_id')
-    .eq('user_id', user.id)
+    .eq('user_id', resolvedUserId)
 
   return (data || []).map((f) => f.event_id)
 }
