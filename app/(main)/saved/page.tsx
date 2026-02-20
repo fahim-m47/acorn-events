@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSavedEvents } from '@/actions/favorites'
 import { SavedEventsList } from '@/components/events/saved-events-list'
+import { canUserOverrideEventHost } from '@/lib/host-override-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,7 @@ export default async function SavedEventsPage() {
   } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+  const canDeleteAnyEvent = canUserOverrideEventHost(user)
 
   const events = await getSavedEvents()
 
@@ -28,7 +30,7 @@ export default async function SavedEventsPage() {
           {events.length} saved event{events.length !== 1 ? 's' : ''}
         </p>
       </div>
-      <SavedEventsList upcoming={upcoming} past={past} />
+      <SavedEventsList upcoming={upcoming} past={past} canDeleteAnyEvent={canDeleteAnyEvent} />
     </div>
   )
 }

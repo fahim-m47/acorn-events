@@ -19,6 +19,7 @@ import type { EventWithCreator, EventCapacitySnapshot } from "@/types"
 interface EventDetailProps {
   event: EventWithCreator
   isOwner?: boolean
+  canDeleteAnyEvent?: boolean
   currentUserId?: string | null
   initialFavorited?: boolean
   showFavoriteButton?: boolean
@@ -28,12 +29,14 @@ interface EventDetailProps {
 export function EventDetail({
   event,
   isOwner,
+  canDeleteAnyEvent = false,
   currentUserId,
   initialFavorited,
   showFavoriteButton,
   capacitySnapshot,
 }: EventDetailProps) {
   const isCreator = isOwner ?? (currentUserId ? event.creator_id === currentUserId : false)
+  const canDeleteEvent = isCreator || canDeleteAnyEvent
   const isAuthenticated = !!currentUserId
   const startDate = new Date(event.start_time)
   const endDate = event.end_time ? new Date(event.end_time) : null
@@ -168,14 +171,16 @@ export function EventDetail({
           )}
         </div>
 
-        {isCreator && (
+        {canDeleteEvent && (
           <div className="mt-8 flex gap-3 pt-6 border-t border-zinc-800">
-            <Button asChild variant="outline" className="gap-2">
-              <Link href={eventEditPath}>
-                <Pencil className="h-4 w-4" />
-                Edit Event
-              </Link>
-            </Button>
+            {isCreator && (
+              <Button asChild variant="outline" className="gap-2">
+                <Link href={eventEditPath}>
+                  <Pencil className="h-4 w-4" />
+                  Edit Event
+                </Link>
+              </Button>
+            )}
             <DeleteEventButton eventId={event.id} />
           </div>
         )}

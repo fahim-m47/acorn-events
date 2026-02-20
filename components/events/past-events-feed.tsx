@@ -6,9 +6,10 @@ import type { EventWithCreator } from "@/types"
 
 interface PastEventsFeedProps {
   events: EventWithCreator[]
+  canDeleteAnyEvent?: boolean
 }
 
-export function PastEventsFeed({ events }: PastEventsFeedProps) {
+export function PastEventsFeed({ events, canDeleteAnyEvent = false }: PastEventsFeedProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -23,5 +24,5 @@ export function PastEventsFeed({ events }: PastEventsFeedProps) {
     )
   }
 
-  return <PastEventsTimelineView events={events} />
+  return <PastEventsTimelineView events={events} canDeleteAnyEvent={canDeleteAnyEvent} />
 }

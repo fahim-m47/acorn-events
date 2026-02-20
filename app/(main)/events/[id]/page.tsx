@@ -8,6 +8,7 @@ import { RsvpAttendeesList } from '@/components/events/rsvp-attendees-list'
 import { BlastFeed, BlastDialog } from '@/components/blasts'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getEventIdFromParam, getEventPath, isCanonicalEventParam } from '@/lib/event-url'
+import { canUserOverrideEventHost } from '@/lib/host-override-access'
 
 export default async function EventPage({
   params,
@@ -29,6 +30,7 @@ export default async function EventPage({
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   const isOwner = user?.id === event.creator_id
+  const canDeleteAnyEvent = canUserOverrideEventHost(user)
   const intent = Array.isArray(rawIntent) ? rawIntent[0] : rawIntent
 
   if (user && !isOwner && event.capacity !== null && (intent === 'rsvp' || intent === 'waitlist')) {
@@ -64,6 +66,7 @@ export default async function EventPage({
       <EventDetail
         event={event}
         isOwner={isOwner}
+        canDeleteAnyEvent={canDeleteAnyEvent}
         currentUserId={user?.id ?? null}
         initialFavorited={favorited}
         showFavoriteButton={isAuthenticated}

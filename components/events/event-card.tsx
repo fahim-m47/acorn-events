@@ -10,6 +10,7 @@ import { EventImage } from "./event-image"
 import { FavoriteButton } from "./favorite-button"
 import { VerifiedBadge } from "./verified-badge"
 import { ShareEventButton } from "./share-event-button"
+import { QuickDeleteEventButton } from "./quick-delete-event-button"
 import { getEventPath } from "@/lib/event-url"
 import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
 import type { EventWithCreator, RegistrationStatus } from "@/types"
@@ -18,6 +19,7 @@ interface EventCardProps {
   event: EventWithCreator
   initialFavorited?: boolean
   registrationStatus?: RegistrationStatus | null
+  showQuickDelete?: boolean
 }
 
 // Format host name for display: two lines if needed, truncate/initial for long names
@@ -55,6 +57,7 @@ export function EventCard({
   event,
   initialFavorited = false,
   registrationStatus = null,
+  showQuickDelete = false,
 }: EventCardProps) {
   const eventPath = getEventPath(event)
   const hostDisplayName = getEventHostDisplayName(event)
@@ -160,6 +163,14 @@ export function EventCard({
               />
             </div>
           </div>
+          {showQuickDelete && (
+            <div
+              className="shrink-0 self-start"
+              onClick={handlePreventNavigation}
+            >
+              <QuickDeleteEventButton eventId={event.id} />
+            </div>
+          )}
         </div>
       </Card>
     </Link>

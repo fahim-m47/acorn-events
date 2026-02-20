@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getMyEvents } from '@/actions/events'
 import { MyEventsList } from '@/components/events/my-events-list'
 import { Button } from '@/components/ui/button'
+import { canUserOverrideEventHost } from '@/lib/host-override-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,7 @@ export default async function MyEventsPage() {
   } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+  const canDeleteAnyEvent = canUserOverrideEventHost(user)
 
   const events = await getMyEvents()
 
@@ -34,7 +36,7 @@ export default async function MyEventsPage() {
           </Link>
         </Button>
       </div>
-      <MyEventsList events={events} />
+      <MyEventsList events={events} canDeleteAnyEvent={canDeleteAnyEvent} />
     </div>
   )
 }

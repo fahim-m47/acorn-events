@@ -12,12 +12,14 @@ interface TimelineViewProps {
   events: EventWithCreator[]
   favoritedEventIds?: string[]
   upcomingGames?: UpcomingGame[]
+  canDeleteAnyEvent?: boolean
 }
 
 export function TimelineView({
   events,
   favoritedEventIds = [],
   upcomingGames = [],
+  canDeleteAnyEvent = false,
 }: TimelineViewProps) {
   // Group events by date
   const groupedEvents = events.reduce<Record<string, EventWithCreator[]>>((groups, event) => {
@@ -71,6 +73,7 @@ export function TimelineView({
                     key={event.id}
                     event={event}
                     initialFavorited={favoritedEventIds.includes(event.id)}
+                    showQuickDelete={canDeleteAnyEvent}
                   />
                 ))}
               </div>

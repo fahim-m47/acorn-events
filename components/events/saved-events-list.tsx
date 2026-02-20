@@ -7,9 +7,10 @@ import type { SavedEventWithStatus } from "@/types"
 interface SavedEventsListProps {
   upcoming: SavedEventWithStatus[]
   past: SavedEventWithStatus[]
+  canDeleteAnyEvent?: boolean
 }
 
-export function SavedEventsList({ upcoming, past }: SavedEventsListProps) {
+export function SavedEventsList({ upcoming, past, canDeleteAnyEvent = false }: SavedEventsListProps) {
   if (upcoming.length === 0 && past.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -36,6 +37,7 @@ export function SavedEventsList({ upcoming, past }: SavedEventsListProps) {
                 event={event}
                 initialFavorited={event.isFavorited}
                 registrationStatus={event.registrationStatus}
+                showQuickDelete={canDeleteAnyEvent}
               />
             ))}
           </div>
@@ -52,6 +54,7 @@ export function SavedEventsList({ upcoming, past }: SavedEventsListProps) {
                 event={event}
                 initialFavorited={event.isFavorited}
                 registrationStatus={event.registrationStatus}
+                showQuickDelete={canDeleteAnyEvent}
               />
             ))}
           </div>

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { addDays, subMonths, subDays } from 'date-fns'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/admin'
 import { createEventSchema } from '@/lib/validations'
 import { MAX_EVENT_MONTHS_AHEAD, EVENT_WINDOW_DAYS, MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES } from '@/lib/constants'
 import { getEventPath } from '@/lib/event-url'
@@ -283,7 +284,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   redirect(updatedEventPath)
 }
 
-// Delete event (verify ownership)
+// Delete event (creator or allowlisted admin)
 export async function deleteEvent(eventId: string): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createServerSupabaseClient()
 
@@ -292,6 +293,7 @@ export async function deleteEvent(eventId: string): Promise<{ success?: boolean;
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  const canDeleteAnyEvent = canUserOverrideEventHost(user)
 
   // Verify ownership
   const { data: existingEvent, error: fetchError } = await supabase
@@ -307,9 +309,13 @@ export async function deleteEvent(eventId: string): Promise<{ success?: boolean;
   if (!existingEvent) return { error: 'Event not found' }
 
   const existing = existingEvent as { creator_id: string; image_url: string | null }
-  if (existing.creator_id !== user.id) {
+  const isCreator = existing.creator_id === user.id
+  if (!isCreator && !canDeleteAnyEvent) {
     return { error: 'You do not have permission to delete this event' }
   }
+
+  const shouldUseAdminClient = canDeleteAnyEvent && !isCreator
+  const deleteClient = shouldUseAdminClient ? createAdminSupabaseClient() : supabase
 
   // Delete the image from storage if it exists
   if (existing.image_url) {
@@ -317,12 +323,12 @@ export async function deleteEvent(eventId: string): Promise<{ success?: boolean;
     const urlParts = existing.image_url.split('/event-images/')
     if (urlParts.length > 1) {
       const filePath = urlParts[1]
-      await supabase.storage.from('event-images').remove([filePath])
+      await deleteClient.storage.from('event-images').remove([filePath])
     }
   }
 
   // Delete event (cascades to favorites and blasts via RLS)
-  const { error } = await supabase.from('events').delete().eq('id', eventId)
+  const { error } = await deleteClient.from('events').delete().eq('id', eventId)
 
   if (error) {
     console.error('Delete error:', error)
@@ -330,6 +336,10 @@ export async function deleteEvent(eventId: string): Promise<{ success?: boolean;
   }
 
   revalidatePath('/')
+  revalidatePath('/saved')
+  revalidatePath('/my-events')
+  revalidatePath('/past-events')
+  revalidatePath(`/events/${eventId}`)
   return { success: true }
 }
 

@@ -7,12 +7,14 @@ import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { EventImage } from "./event-image"
 import { VerifiedBadge } from "./verified-badge"
+import { QuickDeleteEventButton } from "./quick-delete-event-button"
 import { getEventPath } from "@/lib/event-url"
 import { getEventHostDisplayName, hasHostDisplayNameOverride } from "@/lib/event-host"
 import type { EventWithCreator } from "@/types"
 
 interface PastEventCardProps {
   event: EventWithCreator
+  showQuickDelete?: boolean
 }
 
 // Format host name for display
@@ -42,10 +44,14 @@ const formatHostName = (name: string | null | undefined): { firstName: string; l
   return { firstName, lastName }
 }
 
-export function PastEventCard({ event }: PastEventCardProps) {
+export function PastEventCard({ event, showQuickDelete = false }: PastEventCardProps) {
   const hostDisplayName = getEventHostDisplayName(event)
   const formattedHostName = formatHostName(hostDisplayName)
   const showVerifiedBadge = event.creator?.is_verified_host && !hasHostDisplayNameOverride(event)
+  const handlePreventNavigation = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   return (
     <Link href={getEventPath(event)} className="block group w-full">
@@ -91,6 +97,11 @@ export function PastEventCard({ event }: PastEventCardProps) {
               />
             </div>
           </div>
+          {showQuickDelete && (
+            <div className="shrink-0 self-start" onClick={handlePreventNavigation}>
+              <QuickDeleteEventButton eventId={event.id} />
+            </div>
+          )}
         </div>
       </Card>
     </Link>

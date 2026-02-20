@@ -6,15 +6,17 @@ import { Calendar, Heart, Pencil, MessageSquare } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EventImage } from "./event-image"
+import { QuickDeleteEventButton } from "./quick-delete-event-button"
 import { BlastDialog } from "@/components/blasts"
 import { getEventEditPath, getEventPath } from "@/lib/event-url"
 import type { EventWithSaveCount } from "@/actions/events"
 
 interface MyEventsListProps {
   events: EventWithSaveCount[]
+  canDeleteAnyEvent?: boolean
 }
 
-export function MyEventsList({ events }: MyEventsListProps) {
+export function MyEventsList({ events, canDeleteAnyEvent = false }: MyEventsListProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -51,7 +53,7 @@ export function MyEventsList({ events }: MyEventsListProps) {
               </span>
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex items-center gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={getEventEditPath(event)}>
                   <Pencil className="h-4 w-4 mr-1" />
@@ -68,6 +70,11 @@ export function MyEventsList({ events }: MyEventsListProps) {
                   </Button>
                 }
               />
+              {canDeleteAnyEvent && (
+                <div className="ml-auto">
+                  <QuickDeleteEventButton eventId={event.id} />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

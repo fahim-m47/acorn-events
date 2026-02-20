@@ -9,12 +9,14 @@ interface EventFeedProps {
   events: EventWithCreator[]
   favoritedEventIds?: string[]
   upcomingGames?: UpcomingGame[]
+  canDeleteAnyEvent?: boolean
 }
 
 export function EventFeed({
   events,
   favoritedEventIds,
   upcomingGames = [],
+  canDeleteAnyEvent = false,
 }: EventFeedProps) {
   if (events.length === 0) {
     return (
@@ -35,6 +37,7 @@ export function EventFeed({
       events={events}
       favoritedEventIds={favoritedEventIds}
       upcomingGames={upcomingGames}
+      canDeleteAnyEvent={canDeleteAnyEvent}
     />
   )
 }

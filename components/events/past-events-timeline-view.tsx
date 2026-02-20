@@ -8,9 +8,13 @@ import type { EventWithCreator } from '@/types'
 
 interface PastEventsTimelineViewProps {
   events: EventWithCreator[]
+  canDeleteAnyEvent?: boolean
 }
 
-export function PastEventsTimelineView({ events }: PastEventsTimelineViewProps) {
+export function PastEventsTimelineView({
+  events,
+  canDeleteAnyEvent = false,
+}: PastEventsTimelineViewProps) {
   // Group events by date
   const groupedEvents = events.reduce<Record<string, EventWithCreator[]>>((groups, event) => {
     // Use EST date for grouping so events appear in the correct bucket
@@ -53,7 +57,7 @@ export function PastEventsTimelineView({ events }: PastEventsTimelineViewProps) 
               {/* Events column */}
               <div className="flex-1 min-w-0 space-y-4">
                 {dateEvents.map((event) => (
-                  <PastEventCard key={event.id} event={event} />
+                  <PastEventCard key={event.id} event={event} showQuickDelete={canDeleteAnyEvent} />
                 ))}
               </div>
             </div>
