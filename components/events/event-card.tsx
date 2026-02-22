@@ -101,30 +101,27 @@ export function EventCard({
           </div>
 
           {/* Right side - Image with favorite button */}
-          <div className="relative shrink-0">
-            <div className="w-28 md:w-32">
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <div className="relative w-28 md:w-32">
               <EventImage
                 imageUrl={event.image_url}
                 alt={event.title}
                 variant="poster"
                 className="w-full rounded-lg"
               />
+              {registrationLabel && (
+                <div
+                  className={`absolute bottom-1 left-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border backdrop-blur-sm ${
+                    registrationStatus === "going"
+                      ? "border-emerald-300/60 bg-emerald-500/20 text-emerald-100"
+                      : "border-amber-300/60 bg-amber-500/20 text-amber-100"
+                  }`}
+                >
+                  {registrationLabel}
+                </div>
+              )}
             </div>
-            {registrationLabel && (
-              <div
-                className={`absolute bottom-1 right-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border backdrop-blur-sm ${
-                  registrationStatus === "going"
-                    ? "border-emerald-300/60 bg-emerald-500/20 text-emerald-100"
-                    : "border-amber-300/60 bg-amber-500/20 text-amber-100"
-                }`}
-              >
-                {registrationLabel}
-              </div>
-            )}
-            <div
-              className="absolute top-1 right-1"
-              onClick={(e) => e.preventDefault()}
-            >
+            <div onClick={(e) => e.preventDefault()}>
               <FavoriteButton
                 eventId={event.id}
                 initialFavorited={initialFavorited}
