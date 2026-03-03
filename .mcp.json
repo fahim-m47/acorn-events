@@ -1,28 +1,12 @@
 {
   "mcpServers": {
-    "next-devtools": {
-      "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
-    },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp"
     },
-    "tailwindcss-server": {
-      "command": "npx",
-      "args": ["-y", "tailwindcss-mcp-server"]
-    },
-    "shadcn-ui": {
-      "command": "npx",
-      "args": ["@jpisnice/shadcn-ui-mcp-server"]
-    },
     "vercel": {
       "type": "http",
       "url": "https://mcp.vercel.com"
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"]
     }
   }
 }

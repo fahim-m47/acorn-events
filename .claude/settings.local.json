@@ -1,4 +1,14 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(ls /Users/fahim/Projects/acorn-events/*.ts)",
+      "Bash(npm ls ts-node tsx)",
+      "Bash(npx --yes tsx --version)",
+      "Bash(npx tsx scripts/create-haverford-events.ts)",
+      "Bash(ls -la /Users/fahim/Projects/acorn-events/.env*)"
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "next-devtools",
@@ -7,10 +17,5 @@
     "shadcn-ui",
     "vercel",
     "chrome-devtools"
-  ],
-  "permissions": {
-    "allow": [
-      "Bash(npm install)"
-    ]
-  }
+  ]
 }

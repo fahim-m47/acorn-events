@@ -187,6 +187,117 @@ async function main() {
       start_time: "2026-02-26T18:00:00-05:00",
       end_time: "2026-02-26T20:00:00-05:00",
     },
+    {
+      creator_id: creatorId,
+      title: "Flower Arrangement Workshop",
+      description:
+        "Spring has (almost) sprung! Come enjoy a variety of colorful blooms, learn about " +
+        "different types of flowers, and create your own bouquet to take home! " +
+        "Please register by March 18th. We can only accommodate the first 35 students. " +
+        "Contact: hc-secs@haverford.edu",
+      host_display_name: "SECS",
+      location: "Zubrow Commons",
+      start_time: "2026-03-21T13:00:00-05:00",
+      end_time: "2026-03-21T15:00:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "Free Income Tax Sessions",
+      description:
+        "Are you a U.S. citizen who had income in 2025? Come to Stokes 102 to get your taxes " +
+        "e-filed for free! Sessions also available at BMC. Contact: jmelville@haverford.edu",
+      host_display_name: "Free Tax Help",
+      location: "Stokes 102",
+      start_time: "2026-03-21T13:00:00-05:00",
+      end_time: "2026-03-21T16:00:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: '"Cuntcake" Cupcake Decorating',
+      description:
+        "Join the GRASE Center for cupcake decorating as part of Women's History Month " +
+        "programming. Founded in 1983 as the Women's Center, the GRASE Center continues that " +
+        "legacy through Women's History Month events throughout March. " +
+        "Contact: ktedesco@haverford.edu",
+      host_display_name: "GRASE",
+      location: "MCC (Stokes 106)",
+      start_time: "2026-03-04T18:30:00-05:00",
+      end_time: "2026-03-04T20:30:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "HerStory & HaverQueer Submission Party",
+      description:
+        "HerStory is an anthology of students' stories, poetry, and art capturing their years " +
+        "at Haverford, published annually and archived at the GRASE Center and the Libraries. " +
+        "HaverQueer captures the history, experiences, and stories of queer and trans students " +
+        "at Haverford. Come join us on March 19th to work on your creation together with peers! " +
+        "Submissions are open until March 30th. Contact: ktedesco@haverford.edu",
+      host_display_name: "GRASE",
+      location: "VCAM",
+      start_time: "2026-03-19T19:00:00-05:00",
+      end_time: "2026-03-19T20:30:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "GRASE Center Open Mic",
+      description:
+        "Join the GRASE Center for an Open Mic night as part of Women's History Month " +
+        "programming. All are welcome! Contact: ktedesco@haverford.edu",
+      host_display_name: "GRASE",
+      location: "VCAM",
+      start_time: "2026-03-26T19:00:00-05:00",
+      end_time: "2026-03-26T21:00:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "Active Minds Slime-Making",
+      description:
+        "Need a quick break from midterms? Join Active Minds from 6:30–8:30pm in VCAM Lounge " +
+        "to make some slime and squish all your worries away! Contact: aschechtma@haverford.edu",
+      host_display_name: "Active Minds",
+      location: "VCAM Lounge",
+      start_time: "2026-03-05T18:30:00-05:00",
+      end_time: "2026-03-05T20:30:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "Bending the Light: Indigenous Storywork in Medieval Shadow Lands",
+      description:
+        "Join the Comp Lit Department and the Libraries in Lutnick 200 for this year's Jane " +
+        "and Marshall Brown Speakers in Comparative Literature! Suzanne Conklin Akbari " +
+        "(Institute of Advanced Study) and Tarren Andrews (Yale University) will follow the " +
+        "lead of the late Stó:lō si'yam Lee Maracle, blending the format of the lecture with " +
+        "the practices of a Talking Circle. Contact: rahochberg@haverford.edu",
+      host_display_name: "Comp Lit & Libraries",
+      location: "Lutnick 200",
+      start_time: "2026-03-06T16:30:00-05:00",
+      end_time: "2026-03-06T17:30:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "ALASxLCC: Vase Painting and Flower Arranging",
+      description:
+        "Come join ALAS and LCC in a joint vase painting and flower arranging event from " +
+        "7–9pm at the LCC. Snacks, flowers, vases, and painting supplies will be provided. " +
+        "Limited spots available (first come, first serve). Contact: thaber@haverford.edu",
+      host_display_name: "ALAS x LCC",
+      location: "LCC",
+      start_time: "2026-03-19T19:00:00-05:00",
+      end_time: "2026-03-19T21:00:00-05:00",
+    },
+    {
+      creator_id: creatorId,
+      title: "Vejigante Workshop",
+      description:
+        "Want to learn more about the Puerto Rican tradition of vejigantes? Want to make your " +
+        "own mask? Come join the Puerto Rican Student Alliance for this workshop in " +
+        "collaboration with the Maker Arts Space. Contact: lperedafig@haverford.edu",
+      host_display_name: "Puerto Rican Student Alliance",
+      location: "Maker Arts Space",
+      start_time: "2026-03-04T16:00:00-05:00",
+      end_time: "2026-03-04T17:30:00-05:00",
+    },
   ]
 
   for (const event of events) {
