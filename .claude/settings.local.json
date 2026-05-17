@@ -6,7 +6,8 @@
       "Bash(npm ls ts-node tsx)",
       "Bash(npx --yes tsx --version)",
       "Bash(npx tsx scripts/create-haverford-events.ts)",
-      "Bash(ls -la /Users/fahim/Projects/acorn-events/.env*)"
+      "Bash(ls -la /Users/fahim/Projects/acorn-events/.env*)",
+      "Bash(npx tsx:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
